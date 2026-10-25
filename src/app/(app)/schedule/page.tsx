@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Check, Loader2 } from "lucide-react";
 import type { ScheduleSlot, SlotType } from "@/types/database";
 
 const DAYS = [
@@ -39,6 +39,16 @@ export default function SchedulePage() {
   const [label, setLabel] = useState("");
   const [slotType, setSlotType] = useState<SlotType>("class");
   const [saving, setSaving] = useState(false);
+
+  const [showImport, setShowImport] = useState(false);
+  const [icalUrl, setIcalUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [previewSlots, setPreviewSlots] = useState<
+    { day_of_week: number; start_time: string; end_time: string; label: string; selected: boolean }[]
+  >([]);
+  const [importStep, setImportStep] = useState<"url" | "preview">("url");
+  const [insertingImport, setInsertingImport] = useState(false);
 
   useEffect(() => {
     loadSlots();
@@ -80,6 +90,72 @@ export default function SchedulePage() {
     loadSlots();
   }
 
+  async function fetchIcalPreview() {
+    setImporting(true);
+    setImportError("");
+    try {
+      const res = await fetch("/api/import-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: icalUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.error || "Erreur lors de l'import");
+        return;
+      }
+      if (data.slots.length === 0) {
+        setImportError("Aucun créneau trouvé dans ce calendrier.");
+        return;
+      }
+      setPreviewSlots(data.slots.map((s: { day_of_week: number; start_time: string; end_time: string; label: string }) => ({ ...s, selected: true })));
+      setImportStep("preview");
+    } catch {
+      setImportError("Impossible de contacter le serveur.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function confirmImport() {
+    setInsertingImport(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setInsertingImport(false); return; }
+
+    const toInsert = previewSlots
+      .filter((s) => s.selected)
+      .map((s) => ({
+        day_of_week: s.day_of_week,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        label: s.label,
+        slot_type: "class" as SlotType,
+        user_id: user.id,
+      }));
+
+    if (toInsert.length > 0) {
+      await supabase.from("schedule_slots").insert(toInsert);
+    }
+
+    resetImport();
+    loadSlots();
+  }
+
+  function resetImport() {
+    setShowImport(false);
+    setIcalUrl("");
+    setImportError("");
+    setPreviewSlots([]);
+    setImportStep("url");
+    setInsertingImport(false);
+  }
+
+  function togglePreviewSlot(index: number) {
+    setPreviewSlots((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, selected: !s.selected } : s))
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -101,14 +177,126 @@ export default function SchedulePage() {
             Indique tes créneaux de cours, occupations et disponibilités
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Ajouter un créneau
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg font-medium hover:bg-background transition-colors text-sm"
+          >
+            <Upload className="w-4 h-4" />
+            Importer (iCal)
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter un créneau
+          </button>
+        </div>
       </div>
+
+      {showImport && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card-bg border border-border rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 className="font-semibold">
+                {importStep === "url" ? "Importer un emploi du temps" : "Aperçu des créneaux"}
+              </h2>
+              <button onClick={resetImport} className="p-1 hover:bg-background rounded-lg transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {importStep === "url" && (
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-muted">
+                  Colle l&#39;URL de ton calendrier iCal (.ics) pour importer automatiquement tes créneaux de cours.
+                </p>
+                <input
+                  value={icalUrl}
+                  onChange={(e) => setIcalUrl(e.target.value)}
+                  placeholder="https://example.com/calendar.ics"
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                {importError && (
+                  <p className="text-sm text-red-500">{importError}</p>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={fetchIcalPreview}
+                    disabled={importing || !icalUrl.trim()}
+                    className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
+                  >
+                    {importing && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {importing ? "Chargement..." : "Charger"}
+                  </button>
+                  <button
+                    onClick={resetImport}
+                    className="px-6 py-2 border border-border rounded-lg text-sm hover:bg-background transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {importStep === "preview" && (
+              <div className="flex flex-col overflow-hidden">
+                <div className="p-4 overflow-y-auto flex-1">
+                  <p className="text-sm text-muted mb-3">
+                    {previewSlots.filter((s) => s.selected).length} / {previewSlots.length} créneaux sélectionnés
+                  </p>
+                  <div className="space-y-1.5">
+                    {previewSlots.map((slot, i) => (
+                      <label
+                        key={i}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          slot.selected
+                            ? "border-primary/50 bg-primary/5"
+                            : "border-border opacity-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={slot.selected}
+                          onChange={() => togglePreviewSlot(i)}
+                          className="rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{slot.label}</p>
+                          <p className="text-xs text-muted">
+                            {DAYS[slot.day_of_week]} &middot; {slot.start_time} - {slot.end_time}
+                          </p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="px-6 py-4 border-t border-border flex gap-3">
+                  <button
+                    onClick={confirmImport}
+                    disabled={insertingImport || previewSlots.filter((s) => s.selected).length === 0}
+                    className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
+                  >
+                    {insertingImport ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    {insertingImport ? "Import en cours..." : "Importer la sélection"}
+                  </button>
+                  <button
+                    onClick={() => { setImportStep("url"); setPreviewSlots([]); }}
+                    className="px-6 py-2 border border-border rounded-lg text-sm hover:bg-background transition-colors"
+                  >
+                    Retour
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <form
