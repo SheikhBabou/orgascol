@@ -200,8 +200,8 @@ export default function SchedulePage() {
       </div>
 
       {showImport && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card-bg border border-border rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-overlay-in">
+          <div className="bg-card-bg border border-border rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col animate-fade-in-scale">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="font-semibold">
                 {importStep === "url" ? "Importer un emploi du temps" : "Aperçu des créneaux"}
@@ -389,9 +389,9 @@ export default function SchedulePage() {
         </form>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-3 stagger-children">
         {DAYS.map((day, dayIndex) => (
-          <div key={day} className="bg-card-bg border border-border rounded-xl overflow-hidden">
+          <div key={day} className="bg-card-bg border border-border rounded-xl overflow-hidden card-interactive">
             <div className="px-3 py-2 border-b border-border bg-background/50">
               <p className="text-sm font-semibold text-center">{day}</p>
             </div>

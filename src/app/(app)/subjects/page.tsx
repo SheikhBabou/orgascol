@@ -164,11 +164,11 @@ export default function SubjectsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">
           {subjects.map((subject) => (
             <div
               key={subject.id}
-              className="bg-card-bg border border-border rounded-xl p-4 flex items-center gap-3"
+              className="bg-card-bg border border-border rounded-xl p-4 flex items-center gap-3 card-interactive"
             >
               <div className="relative group">
                 <div

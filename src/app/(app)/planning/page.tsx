@@ -163,17 +163,17 @@ export default function PlanningPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 stagger-children">
           {dates.map((date) => (
             <div key={date}>
               <h2 className="font-semibold text-sm text-muted mb-3 uppercase tracking-wide">
                 {format(parseISO(date), "EEEE d MMMM", { locale: fr })}
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-2 stagger-children">
                 {sessionsByDate[date].map((session) => (
                   <div
                     key={session.id}
-                    className={`bg-card-bg border border-border rounded-xl p-4 flex items-center gap-4 ${
+                    className={`bg-card-bg border border-border rounded-xl p-4 flex items-center gap-4 card-interactive ${
                       session.status === "completed"
                         ? "opacity-60"
                         : session.status === "skipped"

@@ -335,7 +335,7 @@ export default function ExamsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {exams.map((exam) => {
             const daysLeft = differenceInDays(
               parseISO(exam.exam_date),
@@ -350,7 +350,7 @@ export default function ExamsPage() {
             return (
               <div
                 key={exam.id}
-                className="bg-card-bg border border-border rounded-xl overflow-hidden"
+                className="bg-card-bg border border-border rounded-xl overflow-hidden card-interactive"
               >
                 <div
                   className="flex items-center gap-3 p-4 cursor-pointer hover:bg-background/50 transition-colors"

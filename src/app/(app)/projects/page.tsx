@@ -238,7 +238,7 @@ export default function ProjectsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger-children">
           {projects.map((project) => {
             const daysLeft = differenceInDays(
               parseISO(project.end_date),
@@ -259,7 +259,7 @@ export default function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="bg-card-bg border border-border rounded-xl p-5 space-y-3"
+                className="bg-card-bg border border-border rounded-xl p-5 space-y-3 card-interactive"
               >
                 <div className="flex items-start gap-3">
                   <div

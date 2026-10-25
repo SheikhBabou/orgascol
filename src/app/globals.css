@@ -62,3 +62,108 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* ── Animations ── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.25s ease-out both;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out both;
+}
+
+.animate-overlay-in {
+  animation: overlay-in 0.2s ease-out both;
+}
+
+/* Staggered children */
+.stagger-children > * {
+  animation: fade-in 0.35s ease-out both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 450ms; }
+
+/* Interactive cards */
+.card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .card-interactive:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+:root[data-theme="dark"] .card-interactive:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Button press effect */
+.btn-press,
+button[type="submit"],
+a[class*="bg-primary"] {
+  transition: transform 0.1s ease;
+}
+.btn-press:active,
+button[type="submit"]:active,
+a[class*="bg-primary"]:active {
+  transform: scale(0.97);
+}
+
+/* Sidebar nav links */
+nav a {
+  transition: all 0.2s ease;
+}
+
+/* Form elements focus */
+input:focus, select:focus, textarea:focus {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Smooth alert banners */
+.space-y-2 > [class*="border-danger"],
+.space-y-2 > [class*="border-warning"] {
+  animation: fade-in 0.4s ease-out both;
+}
+
+/* Modal import animation */
+.fixed.inset-0 > div:not(.animate-fade-in-scale) {
+  animation: fade-in-scale 0.25s ease-out both;
+}

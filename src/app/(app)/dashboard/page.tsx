@@ -178,22 +178,22 @@ export default function DashboardPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card-bg border border-border rounded-xl p-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children">
+        <div className="bg-card-bg border border-border rounded-xl p-4 card-interactive">
           <div className="flex items-center gap-2 text-muted text-sm">
             <BookOpen className="w-4 h-4" />
             Examens à venir
           </div>
           <p className="text-2xl font-bold mt-1">{stats.totalExams}</p>
         </div>
-        <div className="bg-card-bg border border-border rounded-xl p-4">
+        <div className="bg-card-bg border border-border rounded-xl p-4 card-interactive">
           <div className="flex items-center gap-2 text-muted text-sm">
             <Clock className="w-4 h-4" />
             Cette semaine
           </div>
           <p className="text-2xl font-bold mt-1">{stats.upcomingExams}</p>
         </div>
-        <div className="bg-card-bg border border-border rounded-xl p-4">
+        <div className="bg-card-bg border border-border rounded-xl p-4 card-interactive">
           <div className="flex items-center gap-2 text-muted text-sm">
             <CheckCircle2 className="w-4 h-4" />
             Chapitres révisés
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             {stats.completedChapters}/{stats.totalChapters}
           </p>
         </div>
-        <div className="bg-card-bg border border-border rounded-xl p-4">
+        <div className="bg-card-bg border border-border rounded-xl p-4 card-interactive">
           <div className="flex items-center gap-2 text-muted text-sm">
             <TrendingUp className="w-4 h-4" />
             Progression
@@ -211,9 +211,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
         {/* Today's sessions */}
-        <div className="bg-card-bg border border-border rounded-xl p-6">
+        <div className="bg-card-bg border border-border rounded-xl p-6 card-interactive">
           <h2 className="font-semibold text-lg mb-4">
             Révisions du jour
           </h2>
@@ -259,7 +259,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Upcoming exams */}
-        <div className="bg-card-bg border border-border rounded-xl p-6">
+        <div className="bg-card-bg border border-border rounded-xl p-6 card-interactive">
           <h2 className="font-semibold text-lg mb-4">Prochains examens</h2>
           {exams.length === 0 ? (
             <p className="text-muted text-sm">

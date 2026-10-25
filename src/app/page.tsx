@@ -20,7 +20,7 @@ export default function Home() {
 
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-20">
-        <div className="max-w-2xl text-center space-y-6">
+        <div className="max-w-2xl text-center space-y-6 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
             Planifie tes révisions,{" "}
             <span className="text-primary">réussis tes examens</span>
@@ -38,8 +38,8 @@ export default function Home() {
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 max-w-4xl w-full px-4">
-          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 max-w-4xl w-full px-4 stagger-children">
+          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3 card-interactive">
             <Calendar className="w-8 h-8 text-primary" />
             <h3 className="font-semibold text-lg">Planning automatique</h3>
             <p className="text-sm text-muted">
@@ -47,7 +47,7 @@ export default function Home() {
               de chaque examen.
             </p>
           </div>
-          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3">
+          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3 card-interactive">
             <Brain className="w-8 h-8 text-primary" />
             <h3 className="font-semibold text-lg">Méthodes efficaces</h3>
             <p className="text-sm text-muted">
@@ -55,7 +55,7 @@ export default function Home() {
               techniques prouvées par la science.
             </p>
           </div>
-          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3">
+          <div className="bg-card-bg border border-border rounded-xl p-6 space-y-3 card-interactive">
             <Bell className="w-8 h-8 text-primary" />
             <h3 className="font-semibold text-lg">Alertes & suivi</h3>
             <p className="text-sm text-muted">
