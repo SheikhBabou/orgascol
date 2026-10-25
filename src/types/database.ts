@@ -12,7 +12,21 @@ export interface Subject {
   user_id: string;
   name: string;
   color: string;
+  ue_name: string | null;
+  ects: number;
   created_at: string;
+}
+
+export interface Grade {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  title: string;
+  grade: number;
+  max_grade: number;
+  coefficient: number;
+  created_at: string;
+  subject?: Subject;
 }
 
 export interface Exam {

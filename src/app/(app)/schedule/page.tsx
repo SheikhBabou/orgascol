@@ -33,7 +33,6 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  // Form
   const [dayOfWeek, setDayOfWeek] = useState(0);
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("09:00");
@@ -58,12 +57,17 @@ export default function SchedulePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSaving(false); return; }
+
     await supabase.from("schedule_slots").insert({
       day_of_week: dayOfWeek,
       start_time: startTime,
       end_time: endTime,
       label: label || null,
       slot_type: slotType,
+      user_id: user.id,
     });
     setLabel("");
     setShowForm(false);
@@ -193,7 +197,6 @@ export default function SchedulePage() {
         </form>
       )}
 
-      {/* Weekly grid */}
       <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
         {DAYS.map((day, dayIndex) => (
           <div key={day} className="bg-card-bg border border-border rounded-xl overflow-hidden">

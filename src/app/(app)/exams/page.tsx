@@ -7,17 +7,6 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Exam, Subject, ChapterStatus } from "@/types/database";
 
-const SUBJECT_COLORS = [
-  "#6366f1",
-  "#ec4899",
-  "#f59e0b",
-  "#22c55e",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ef4444",
-  "#14b8a6",
-];
-
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -26,12 +15,10 @@ export default function ExamsPage() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  // Form state
   const [title, setTitle] = useState("");
   const [examDate, setExamDate] = useState("");
   const [teacher, setTeacher] = useState("");
   const [subjectId, setSubjectId] = useState("");
-  const [newSubjectName, setNewSubjectName] = useState("");
   const [chapters, setChapters] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
 
@@ -56,34 +43,28 @@ export default function ExamsPage() {
     e.preventDefault();
     setSaving(true);
 
-    let finalSubjectId = subjectId;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSaving(false); return; }
 
-    if (subjectId === "new" && newSubjectName.trim()) {
-      const color =
-        SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length];
-      const { data } = await supabase
-        .from("subjects")
-        .insert({ name: newSubjectName.trim(), color })
-        .select()
-        .single();
-      if (data) finalSubjectId = data.id;
-    }
+    if (!subjectId) { setSaving(false); return; }
 
-    if (!finalSubjectId || finalSubjectId === "new") {
-      setSaving(false);
-      return;
-    }
-
-    const { data: exam } = await supabase
+    const { data: exam, error } = await supabase
       .from("exams")
       .insert({
         title,
         exam_date: examDate,
         teacher: teacher || null,
-        subject_id: finalSubjectId,
+        subject_id: subjectId,
+        user_id: user.id,
       })
       .select()
       .single();
+
+    if (error) {
+      console.error("Erreur création examen:", error);
+      setSaving(false);
+      return;
+    }
 
     if (exam) {
       const validChapters = chapters.filter((c) => c.trim());
@@ -98,12 +79,10 @@ export default function ExamsPage() {
       }
     }
 
-    // Reset form
     setTitle("");
     setExamDate("");
     setTeacher("");
     setSubjectId("");
-    setNewSubjectName("");
     setChapters([""]);
     setShowForm(false);
     setSaving(false);
@@ -155,7 +134,6 @@ export default function ExamsPage() {
         </button>
       </div>
 
-      {/* Add exam form */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
@@ -173,7 +151,7 @@ export default function ExamsPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ex: Contrôle de maths"
+                placeholder="Ex: CC Séries temporelles"
               />
             </div>
             <div>
@@ -204,23 +182,13 @@ export default function ExamsPage() {
                     {s.name}
                   </option>
                 ))}
-                <option value="new">+ Nouvelle matière</option>
               </select>
+              {subjects.length === 0 && (
+                <p className="text-xs text-warning mt-1">
+                  Aucune matière. Va dans &quot;Matières&quot; pour en ajouter.
+                </p>
+              )}
             </div>
-            {subjectId === "new" && (
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  Nom de la matière *
-                </label>
-                <input
-                  required
-                  value={newSubjectName}
-                  onChange={(e) => setNewSubjectName(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Ex: Mathématiques"
-                />
-              </div>
-            )}
             <div>
               <label className="block text-sm font-medium mb-1.5">
                 Professeur (optionnel)
@@ -229,12 +197,11 @@ export default function ExamsPage() {
                 value={teacher}
                 onChange={(e) => setTeacher(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ex: M. Dupont"
+                placeholder="Ex: M. Gouno"
               />
             </div>
           </div>
 
-          {/* Chapters */}
           <div>
             <label className="block text-sm font-medium mb-1.5">
               Chapitres à réviser
@@ -295,7 +262,6 @@ export default function ExamsPage() {
         </form>
       )}
 
-      {/* Exams list */}
       {exams.length === 0 && !showForm ? (
         <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
           <p className="text-muted">
@@ -309,8 +275,8 @@ export default function ExamsPage() {
               parseISO(exam.exam_date),
               new Date()
             );
-            const chapters = exam.chapters ?? [];
-            const done = chapters.filter(
+            const chaptersList = exam.chapters ?? [];
+            const done = chaptersList.filter(
               (c) => c.status === "completed"
             ).length;
             const isExpanded = expandedExam === exam.id;
@@ -344,7 +310,7 @@ export default function ExamsPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-muted">
-                      {done}/{chapters.length} chapitres
+                      {done}/{chaptersList.length} chapitres
                     </span>
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -367,12 +333,12 @@ export default function ExamsPage() {
 
                 {isExpanded && (
                   <div className="border-t border-border p-4 space-y-2">
-                    {chapters.length === 0 ? (
+                    {chaptersList.length === 0 ? (
                       <p className="text-sm text-muted">
                         Aucun chapitre ajouté.
                       </p>
                     ) : (
-                      chapters
+                      chaptersList
                         .sort((a, b) => a.position - b.position)
                         .map((ch) => (
                           <label

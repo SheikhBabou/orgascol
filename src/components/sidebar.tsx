@@ -11,6 +11,8 @@ import {
   GraduationCap,
   Menu,
   X,
+  Layers,
+  Calculator,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -18,9 +20,11 @@ import { useRouter } from "next/navigation";
 
 const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Matières", href: "/subjects", icon: Layers },
   { name: "Examens", href: "/exams", icon: BookOpen },
   { name: "Emploi du temps", href: "/schedule", icon: Calendar },
   { name: "Planning", href: "/planning", icon: ClipboardList },
+  { name: "Notes & Moyennes", href: "/grades", icon: Calculator },
 ];
 
 export default function Sidebar() {
@@ -76,7 +80,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
         className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-card-bg border border-border md:hidden"
@@ -84,7 +87,6 @@ export default function Sidebar() {
         <Menu className="w-5 h-5" />
       </button>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -92,7 +94,6 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-sidebar-bg border-r border-border flex flex-col transform transition-transform md:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -107,7 +108,6 @@ export default function Sidebar() {
         {navContent}
       </aside>
 
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-sidebar-bg border-r border-border">
         {navContent}
       </aside>
