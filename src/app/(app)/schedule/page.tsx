@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Upload, X, Check, Loader2 } from "lucide-react";
 import type { ScheduleSlot, SlotType } from "@/types/database";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 const DAYS = [
   "Lundi",
@@ -49,6 +50,7 @@ export default function SchedulePage() {
   >([]);
   const [importStep, setImportStep] = useState<"url" | "preview">("url");
   const [insertingImport, setInsertingImport] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadSlots();
@@ -85,8 +87,10 @@ export default function SchedulePage() {
     loadSlots();
   }
 
-  async function deleteSlot(id: string) {
-    await supabase.from("schedule_slots").delete().eq("id", id);
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    await supabase.from("schedule_slots").delete().eq("id", deleteTarget.id);
+    setDeleteTarget(null);
     loadSlots();
   }
 
@@ -411,7 +415,7 @@ export default function SchedulePage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => deleteSlot(slot.id)}
+                        onClick={() => setDeleteTarget({ id: slot.id, name: slot.label || SLOT_TYPE_LABELS[slot.slot_type] })}
                         className="opacity-50 hover:opacity-100 p-0.5"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -424,6 +428,14 @@ export default function SchedulePage() {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Supprimer le créneau ?"
+        message={`"${deleteTarget?.name ?? ""}" sera supprimé de ton emploi du temps.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Palette } from "lucide-react";
 import type { Subject } from "@/types/database";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 const COLORS = [
   "#6366f1", "#ec4899", "#f59e0b", "#22c55e", "#3b82f6",
@@ -14,7 +15,10 @@ export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNames, setNewNames] = useState("");
+  const [ueName, setUeName] = useState("");
+  const [ects, setEcts] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -54,17 +58,23 @@ export default function SubjectsPage() {
           name,
           color: COLORS[(subjects.length + i) % COLORS.length],
           user_id: user.id,
+          ue_name: ueName.trim() || null,
+          ects: ects ? parseInt(ects) : 0,
         }))
       );
     }
 
     setNewNames("");
+    setUeName("");
+    setEcts("");
     setSaving(false);
     loadSubjects();
   }
 
-  async function deleteSubject(id: string) {
-    await supabase.from("subjects").delete().eq("id", id);
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    await supabase.from("subjects").delete().eq("id", deleteTarget.id);
+    setDeleteTarget(null);
     loadSubjects();
   }
 
@@ -97,17 +107,44 @@ export default function SubjectsPage() {
         className="bg-card-bg border border-border rounded-xl p-6 space-y-4"
       >
         <h2 className="font-semibold">Ajouter des matières</h2>
-        <div>
-          <label className="block text-sm font-medium mb-1.5">
-            Une matière par ligne (tu peux en coller plusieurs d&apos;un coup)
-          </label>
-          <textarea
-            value={newNames}
-            onChange={(e) => setNewNames(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-            placeholder={"Séries temporelles\nIntelligence Artificielle\nTraitement des signaux\nAnglais"}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1.5">
+              Une matière par ligne (tu peux en coller plusieurs d&apos;un coup)
+            </label>
+            <textarea
+              value={newNames}
+              onChange={(e) => setNewNames(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              placeholder={"Séries temporelles\nIntelligence Artificielle\nTraitement des signaux\nAnglais"}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              UE (optionnel)
+            </label>
+            <input
+              value={ueName}
+              onChange={(e) => setUeName(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ex: UE1 Informatique"
+            />
+            <p className="text-xs text-muted mt-1">Toutes les matières ajoutées seront rattachées à cette UE.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              ECTS (optionnel)
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={ects}
+              onChange={(e) => setEcts(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ex: 6"
+            />
+          </div>
         </div>
         <button
           type="submit"
@@ -149,11 +186,18 @@ export default function SubjectsPage() {
                   ))}
                 </div>
               </div>
-              <span className="flex-1 text-sm font-medium">
-                {subject.name}
-              </span>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium">{subject.name}</span>
+                {(subject.ue_name || subject.ects > 0) && (
+                  <p className="text-xs text-muted">
+                    {subject.ue_name && <span>{subject.ue_name}</span>}
+                    {subject.ue_name && subject.ects > 0 && " · "}
+                    {subject.ects > 0 && <span>{subject.ects} ECTS</span>}
+                  </p>
+                )}
+              </div>
               <button
-                onClick={() => deleteSubject(subject.id)}
+                onClick={() => setDeleteTarget({ id: subject.id, name: subject.name })}
                 className="p-1.5 text-muted hover:text-danger transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -162,6 +206,14 @@ export default function SubjectsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Supprimer la matière ?"
+        message={`"${deleteTarget?.name ?? ""}" sera supprimée définitivement, ainsi que toutes les notes et examens associés.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

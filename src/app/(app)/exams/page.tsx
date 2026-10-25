@@ -6,6 +6,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Pencil, X } from "l
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Exam, Subject, ChapterStatus } from "@/types/database";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
@@ -25,6 +26,7 @@ export default function ExamsPage() {
 
   const [newChapter, setNewChapter] = useState("");
   const [addingChapterTo, setAddingChapterTo] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "exam" | "chapter"; id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -145,13 +147,14 @@ export default function ExamsPage() {
     loadData();
   }
 
-  async function deleteExam(id: string) {
-    await supabase.from("exams").delete().eq("id", id);
-    loadData();
-  }
-
-  async function deleteChapter(id: string) {
-    await supabase.from("chapters").delete().eq("id", id);
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === "exam") {
+      await supabase.from("exams").delete().eq("id", deleteTarget.id);
+    } else {
+      await supabase.from("chapters").delete().eq("id", deleteTarget.id);
+    }
+    setDeleteTarget(null);
     loadData();
   }
 
@@ -426,7 +429,7 @@ export default function ExamsPage() {
                               {ch.title}
                             </span>
                             <button
-                              onClick={() => deleteChapter(ch.id)}
+                              onClick={() => setDeleteTarget({ type: "chapter", id: ch.id, name: ch.title })}
                               className="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-danger transition-opacity"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -479,7 +482,7 @@ export default function ExamsPage() {
                         Modifier
                       </button>
                       <button
-                        onClick={() => deleteExam(exam.id)}
+                        onClick={() => setDeleteTarget({ type: "exam", id: exam.id, name: exam.title })}
                         className="flex items-center gap-1.5 text-xs text-danger hover:underline"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -493,6 +496,14 @@ export default function ExamsPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={deleteTarget?.type === "exam" ? "Supprimer l'examen ?" : "Supprimer le chapitre ?"}
+        message={`"${deleteTarget?.name ?? ""}" sera supprimé définitivement${deleteTarget?.type === "exam" ? " ainsi que tous ses chapitres" : ""}.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

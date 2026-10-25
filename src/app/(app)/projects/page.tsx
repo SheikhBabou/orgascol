@@ -6,6 +6,7 @@ import { Plus, Trash2, Pencil, FolderOpen } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Project, Subject, ProjectStatus } from "@/types/database";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -21,6 +22,7 @@ export default function ProjectsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -93,8 +95,10 @@ export default function ProjectsPage() {
     loadData();
   }
 
-  async function deleteProject(id: string) {
-    await supabase.from("projects").delete().eq("id", id);
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    await supabase.from("projects").delete().eq("id", deleteTarget.id);
+    setDeleteTarget(null);
     loadData();
   }
 
@@ -331,7 +335,7 @@ export default function ProjectsPage() {
                     Modifier
                   </button>
                   <button
-                    onClick={() => deleteProject(project.id)}
+                    onClick={() => setDeleteTarget({ id: project.id, name: project.title })}
                     className="flex items-center gap-1.5 text-xs text-danger hover:underline"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -343,6 +347,14 @@ export default function ProjectsPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Supprimer le projet ?"
+        message={`"${deleteTarget?.name ?? ""}" sera supprimé définitivement.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2 } from "lucide-react";
 import type { Subject, Grade } from "@/types/database";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 export default function GradesPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -18,6 +19,7 @@ export default function GradesPage() {
   const [maxGrade, setMaxGrade] = useState("20");
   const [coefficient, setCoefficient] = useState("1");
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -58,8 +60,10 @@ export default function GradesPage() {
     loadData();
   }
 
-  async function deleteGrade(id: string) {
-    await supabase.from("grades").delete().eq("id", id);
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    await supabase.from("grades").delete().eq("id", deleteTarget.id);
+    setDeleteTarget(null);
     loadData();
   }
 
@@ -285,7 +289,7 @@ export default function GradesPage() {
                                 {g.grade}/{g.max_grade}
                               </span>
                               <button
-                                onClick={() => deleteGrade(g.id)}
+                                onClick={() => setDeleteTarget({ id: g.id, name: g.title })}
                                 className="opacity-50 hover:opacity-100 text-danger"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -336,7 +340,7 @@ export default function GradesPage() {
                               {g.grade}/{g.max_grade}
                             </span>
                             <button
-                              onClick={() => deleteGrade(g.id)}
+                              onClick={() => setDeleteTarget({ id: g.id, name: g.title })}
                               className="opacity-50 hover:opacity-100 text-danger"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -360,6 +364,14 @@ export default function GradesPage() {
           </p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Supprimer la note ?"
+        message={`La note "${deleteTarget?.name ?? ""}" sera supprimée définitivement.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

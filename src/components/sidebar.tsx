@@ -14,6 +14,7 @@ import {
   Layers,
   Calculator,
   FolderOpen,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -68,7 +69,19 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-border">
+      <div className="px-3 py-4 border-t border-border space-y-1">
+        <Link
+          href="/settings"
+          onClick={() => setMobileOpen(false)}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname.startsWith("/settings")
+              ? "bg-primary-light text-primary"
+              : "text-muted hover:bg-primary-light/50 hover:text-foreground"
+          }`}
+        >
+          <Settings className="w-5 h-5" />
+          Paramètres
+        </Link>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:bg-danger/10 hover:text-danger transition-colors w-full"
