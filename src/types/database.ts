@@ -29,6 +29,21 @@ export interface Grade {
   subject?: Subject;
 }
 
+export type ProjectStatus = "not_started" | "in_progress" | "completed";
+
+export interface Project {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  title: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  status: ProjectStatus;
+  created_at: string;
+  subject?: Subject;
+}
+
 export interface Exam {
   id: string;
   user_id: string;

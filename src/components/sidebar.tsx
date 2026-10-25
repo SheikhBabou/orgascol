@@ -13,6 +13,7 @@ import {
   X,
   Layers,
   Calculator,
+  FolderOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Matières", href: "/subjects", icon: Layers },
   { name: "Examens", href: "/exams", icon: BookOpen },
+  { name: "Projets", href: "/projects", icon: FolderOpen },
   { name: "Emploi du temps", href: "/schedule", icon: Calendar },
   { name: "Planning", href: "/planning", icon: ClipboardList },
   { name: "Notes & Moyennes", href: "/grades", icon: Calculator },

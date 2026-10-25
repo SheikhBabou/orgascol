@@ -8,14 +8,26 @@ import {
   CheckCircle2,
   AlertTriangle,
   TrendingUp,
+  Bell,
+  FolderOpen,
 } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
-import type { Exam, RevisionSession } from "@/types/database";
+import type { Exam, RevisionSession, Project } from "@/types/database";
+
+interface Alert {
+  type: "exam" | "project";
+  title: string;
+  subject: string;
+  daysLeft: number;
+  color: string;
+}
 
 export default function DashboardPage() {
   const [exams, setExams] = useState<Exam[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [todaySessions, setTodaySessions] = useState<RevisionSession[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [stats, setStats] = useState({
     totalExams: 0,
     totalChapters: 0,
@@ -32,7 +44,7 @@ export default function DashboardPage() {
   async function loadDashboard() {
     const today = format(new Date(), "yyyy-MM-dd");
 
-    const [examsRes, sessionsRes, chaptersRes] = await Promise.all([
+    const [examsRes, sessionsRes, chaptersRes, projectsRes] = await Promise.all([
       supabase
         .from("exams")
         .select("*, subject:subjects(*), chapters(*)")
@@ -48,10 +60,17 @@ export default function DashboardPage() {
         .order("start_time", { ascending: true })
         .limit(3),
       supabase.from("chapters").select("status"),
+      supabase
+        .from("projects")
+        .select("*, subject:subjects(*)")
+        .neq("status", "completed")
+        .gte("end_date", today)
+        .order("end_date", { ascending: true }),
     ]);
 
     if (examsRes.data) setExams(examsRes.data);
     if (sessionsRes.data) setTodaySessions(sessionsRes.data);
+    if (projectsRes.data) setProjects(projectsRes.data);
 
     const allChapters = chaptersRes.data ?? [];
     setStats({
@@ -64,6 +83,36 @@ export default function DashboardPage() {
       ).length,
     });
 
+    const newAlerts: Alert[] = [];
+
+    for (const exam of examsRes.data ?? []) {
+      const daysLeft = differenceInDays(parseISO(exam.exam_date), new Date());
+      if (daysLeft >= 0 && daysLeft <= 5) {
+        newAlerts.push({
+          type: "exam",
+          title: exam.title,
+          subject: exam.subject?.name ?? "",
+          daysLeft,
+          color: exam.subject?.color ?? "#6366f1",
+        });
+      }
+    }
+
+    for (const project of projectsRes.data ?? []) {
+      const daysLeft = differenceInDays(parseISO(project.end_date), new Date());
+      if (daysLeft >= 0 && daysLeft <= 5) {
+        newAlerts.push({
+          type: "project",
+          title: project.title,
+          subject: project.subject?.name ?? "",
+          daysLeft,
+          color: project.subject?.color ?? "#6366f1",
+        });
+      }
+    }
+
+    newAlerts.sort((a, b) => a.daysLeft - b.daysLeft);
+    setAlerts(newAlerts);
     setLoading(false);
   }
 
@@ -88,6 +137,45 @@ export default function DashboardPage() {
           {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
         </p>
       </div>
+
+      {/* Alerts */}
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((alert, i) => (
+            <div
+              key={i}
+              className={`flex items-center gap-3 p-4 rounded-xl border ${
+                alert.daysLeft <= 2
+                  ? "bg-danger/5 border-danger/20"
+                  : "bg-warning/5 border-warning/20"
+              }`}
+            >
+              <div className={`p-2 rounded-lg ${
+                alert.daysLeft <= 2 ? "bg-danger/10" : "bg-warning/10"
+              }`}>
+                {alert.type === "exam" ? (
+                  <AlertTriangle className={`w-5 h-5 ${alert.daysLeft <= 2 ? "text-danger" : "text-warning"}`} />
+                ) : (
+                  <FolderOpen className={`w-5 h-5 ${alert.daysLeft <= 2 ? "text-danger" : "text-warning"}`} />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">
+                  {alert.daysLeft === 0
+                    ? `${alert.type === "exam" ? "Examen" : "Date limite"} aujourd'hui !`
+                    : `Plus que ${alert.daysLeft} jour${alert.daysLeft > 1 ? "s" : ""} avant ${
+                        alert.type === "exam" ? "l'examen" : "la date limite du projet"
+                      }`}
+                </p>
+                <p className="text-xs text-muted">
+                  {alert.title} · {alert.subject}
+                </p>
+              </div>
+              <Bell className={`w-4 h-4 ${alert.daysLeft <= 2 ? "text-danger" : "text-warning"}`} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
