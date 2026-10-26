@@ -5,42 +5,55 @@ import Footer from "@/components/footer";
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar — same style as landing hero */}
-      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl flex items-center gap-6 bg-primary/90 backdrop-blur-xl border border-white/10 shadow-lg">
-        <Link href="/" className="flex items-center gap-2">
-          <GraduationCap className="w-6 h-6 text-white" />
-          <span className="text-lg font-bold text-white">
-            Orga&apos;Scol
-          </span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-4">
-          {["Fonctionnalités", "Méthode", "Tarifs"].map((item) => (
-            <Link
-              key={item}
-              href={`/#${item.toLowerCase()}`}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
-            >
-              {item}
-            </Link>
-          ))}
-        </nav>
-        <Link
-          href="/auth?plan=mensuel"
-          className="ml-2 px-5 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25 transition-all"
-        >
-          Commencer
-        </Link>
-        <Link
-          href="/"
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-colors"
-          title="Fermer"
-        >
-          <X className="w-4 h-4" />
-        </Link>
-      </header>
+      {/* Full-width navbar */}
+      <header className="sticky top-0 z-50 bg-card-bg/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <GraduationCap className="w-6 h-6 text-primary" />
+            <span className="text-lg font-bold text-foreground">
+              Orga&apos;Scol
+            </span>
+          </Link>
 
-      {/* Spacer for fixed navbar */}
-      <div className="h-20" />
+          {/* Nav links */}
+          <nav className="hidden md:flex items-center gap-8">
+            {[
+              { label: "Accueil", href: "/" },
+              { label: "Fonctionnalités", href: "/#fonctionnalités" },
+              { label: "Méthode", href: "/#méthode" },
+              { label: "Tarifs", href: "/#tarifs" },
+              { label: "FAQ", href: "/faq" },
+              { label: "Contact", href: "/contact" },
+            ].map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/auth?plan=mensuel"
+              className="px-5 py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:opacity-90 transition-opacity"
+            >
+              Commencer
+            </Link>
+            <Link
+              href="/"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted hover:text-foreground hover:bg-background transition-colors"
+              title="Fermer"
+            >
+              <X className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </header>
 
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
         {children}
