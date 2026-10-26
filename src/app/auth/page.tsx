@@ -91,7 +91,7 @@ function AuthContent() {
                 Plan {plan === "annuel" ? "Annuel" : "Mensuel"} sélectionné
               </p>
               <p className="text-xs text-white/50 mt-1">
-                {plan === "annuel" ? "9,99€/mois · 99,90€/année scolaire · Engagement 10 mois" : "11,99€/mois · Résiliable à tout moment"}
+                {plan === "annuel" ? "9,99€/mois · 99,90€/année scolaire · Engagement 10 mois · Paiement mensuel ou en une fois" : "11,99€/mois · Résiliable à tout moment"}
               </p>
             </div>
           )}

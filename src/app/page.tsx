@@ -356,7 +356,7 @@ export default function Home() {
                 <span className="text-4xl font-bold">9,99€</span>
                 <span className="text-white/60">/mois</span>
               </div>
-              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire, facturé en une fois</p>
+              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire — paiement mensuel ou en une fois</p>
               <ul className="relative space-y-3">
                 {[
                   "1 mois d'essai gratuit",
