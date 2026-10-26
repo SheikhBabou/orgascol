@@ -238,7 +238,7 @@ export default function Home() {
             <p className="text-lg md:text-xl text-white/50">
               La plupart des étudiants révisent en mode panique la veille de l&apos;examen.
             </p>
-            <p className="text-3xl md:text-5xl font-bold leading-tight">
+            <p className="text-3xl md:text-5xl font-bold leading-tight font-[family-name:var(--font-playfair)]">
               Nous planifions{" "}
               <span className="text-primary italic">chaque session</span>
               {" "}en avance pour que ta mémoire travaille pour toi.
