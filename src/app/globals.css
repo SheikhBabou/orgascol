@@ -255,3 +255,24 @@ input, select, textarea {
 :root[data-theme="dark"] .glass-card {
   background: rgba(26, 34, 52, 0.7);
 }
+
+/* Legal pages content */
+.legal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.legal-content ul li {
+  position: relative;
+  padding-left: 1rem;
+}
+.legal-content ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--primary);
+}

@@ -1,70 +1,164 @@
+import {
+  Info,
+  User,
+  Server,
+  Copyright,
+  Cookie,
+  Link2,
+  Mail,
+} from "lucide-react";
+
+const sections = [
+  {
+    num: "01",
+    icon: User,
+    title: "Éditeur du site",
+    content: (
+      <>
+        <ul>
+          <li><strong>Nom du service :</strong> Orga&apos;Scol</li>
+          <li><strong>Responsable de la publication :</strong> Cheikh Babou</li>
+          <li><strong>Email :</strong> contact@orgascol.fr</li>
+          <li><strong>Statut :</strong> Micro-entreprise en création</li>
+          <li><strong>Pays :</strong> France</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    num: "02",
+    icon: Server,
+    title: "Hébergement",
+    content: (
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-4 rounded-xl bg-background border border-border">
+            <p className="font-semibold text-sm text-foreground">Vercel Inc.</p>
+            <p className="text-xs text-muted mt-1">Hébergement de l&apos;application</p>
+            <p className="text-xs text-muted">340 S Lemon Ave #4133, Walnut, CA 91789, USA</p>
+          </div>
+          <div className="p-4 rounded-xl bg-background border border-border">
+            <p className="font-semibold text-sm text-foreground">Supabase Inc.</p>
+            <p className="text-xs text-muted mt-1">Base de données &amp; authentification</p>
+            <p className="text-xs text-muted">970 Toa Payoh North #07-04, Singapore</p>
+          </div>
+        </div>
+      </>
+    ),
+  },
+  {
+    num: "03",
+    icon: Copyright,
+    title: "Propriété intellectuelle",
+    content: (
+      <>
+        <p>
+          L&apos;ensemble du contenu du site Orga&apos;Scol (textes, interface, logos, graphismes,
+          icônes, code source) est la propriété exclusive de l&apos;éditeur, sauf mention contraire.
+        </p>
+        <p>
+          Toute reproduction, représentation, modification ou adaptation, totale ou partielle,
+          est interdite sans autorisation préalable écrite de l&apos;éditeur.
+        </p>
+        <p>
+          Les données saisies par l&apos;utilisateur (matières, notes, examens, etc.) restent
+          la propriété de l&apos;utilisateur.
+        </p>
+      </>
+    ),
+  },
+  {
+    num: "04",
+    icon: Cookie,
+    title: "Cookies",
+    content: (
+      <>
+        <p>
+          Orga&apos;Scol utilise uniquement des <strong>cookies techniques strictement nécessaires</strong> au
+          fonctionnement du service :
+        </p>
+        <ul>
+          <li><strong>Authentification :</strong> Maintien de votre session de connexion.</li>
+          <li><strong>Préférences :</strong> Sauvegarde du thème (clair/sombre) dans le stockage local du navigateur.</li>
+        </ul>
+        <p>
+          <strong>Aucun cookie publicitaire, analytique ou de traçage</strong> n&apos;est utilisé.
+          Aucun consentement supplémentaire n&apos;est requis pour les cookies strictement nécessaires
+          (conformément à la directive ePrivacy).
+        </p>
+      </>
+    ),
+  },
+  {
+    num: "05",
+    icon: Link2,
+    title: "Liens et données personnelles",
+    content: (
+      <>
+        <p>
+          Les informations relatives au traitement de vos données personnelles sont détaillées
+          dans notre <a href="/confidentialite" className="text-primary font-medium hover:underline">Politique de confidentialité</a>.
+        </p>
+        <p>
+          Les conditions d&apos;utilisation du service et des abonnements sont détaillées
+          dans nos <a href="/cgu" className="text-primary font-medium hover:underline">Conditions Générales d&apos;Utilisation</a>.
+        </p>
+      </>
+    ),
+  },
+];
+
 export default function MentionsLegalesPage() {
   return (
-    <div className="prose-custom space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Mentions l&eacute;gales</h1>
-        <p className="text-muted text-sm mt-2">Derni&egrave;re mise &agrave; jour : 26 octobre 2026</p>
+    <div className="space-y-8">
+      {/* Hero header */}
+      <div className="text-center space-y-4 pb-4">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+          <Info className="w-8 h-8 text-primary" />
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          Mentions <span className="text-primary">légales</span>
+        </h1>
+        <p className="text-muted max-w-lg mx-auto">
+          Informations légales relatives au site Orga&apos;Scol et à son éditeur.
+        </p>
       </div>
 
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">&Eacute;diteur du site</h2>
-        <div className="bg-card-bg border border-border rounded-xl p-5 text-sm space-y-1.5">
-          <p><strong>Nom du service :</strong> Orga&apos;Scol</p>
-          <p><strong>Statut :</strong> Projet en cours de d&eacute;veloppement (micro-entreprise en cr&eacute;ation)</p>
-          <p><strong>Responsable de la publication :</strong> Cheikh Babou</p>
-          <p><strong>Email :</strong> contact@orgascol.fr</p>
-          <p><strong>Adresse :</strong> France</p>
-        </div>
-      </section>
+      {/* Sections */}
+      <div className="space-y-5">
+        {sections.map((s) => (
+          <div key={s.num} className="bg-card-bg border border-border rounded-2xl p-6 md:p-8 space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <s.icon className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-primary">{s.num}</span>
+                <h2 className="text-lg font-bold">{s.title}</h2>
+              </div>
+            </div>
+            <div className="legal-content text-sm text-muted leading-relaxed space-y-3 pl-0 md:pl-16">
+              {s.content}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">H&eacute;bergement</h2>
-        <div className="bg-card-bg border border-border rounded-xl p-5 text-sm space-y-1.5">
-          <p><strong>H&eacute;bergeur :</strong> Vercel Inc.</p>
-          <p><strong>Adresse :</strong> 340 S Lemon Ave #4133, Walnut, CA 91789, &Eacute;tats-Unis</p>
-          <p><strong>Site :</strong> vercel.com</p>
-        </div>
-        <div className="bg-card-bg border border-border rounded-xl p-5 text-sm space-y-1.5">
-          <p><strong>Base de donn&eacute;es :</strong> Supabase Inc.</p>
-          <p><strong>Adresse :</strong> 970 Toa Payoh North #07-04, Singapore 318992</p>
-          <p><strong>Site :</strong> supabase.com</p>
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Propri&eacute;t&eacute; intellectuelle</h2>
-        <p className="text-sm text-muted leading-relaxed">
-          L&apos;ensemble du contenu du site Orga&apos;Scol (textes, interface, logos, graphismes, ic&ocirc;nes)
-          est la propri&eacute;t&eacute; exclusive de l&apos;&eacute;diteur, sauf mention contraire. Toute reproduction,
-          repr&eacute;sentation, modification ou adaptation, totale ou partielle, est interdite sans
-          autorisation pr&eacute;alable &eacute;crite de l&apos;&eacute;diteur.
+      {/* Footer CTA */}
+      <div className="bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-8 md:p-10 text-center text-white space-y-4">
+        <h3 className="text-xl font-bold">Une question ?</h3>
+        <p className="text-white/70 text-sm max-w-md mx-auto">
+          Notre équipe est disponible pour répondre à toutes vos questions.
         </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Donn&eacute;es personnelles</h2>
-        <p className="text-sm text-muted leading-relaxed">
-          Les informations relatives au traitement de vos donn&eacute;es personnelles sont d&eacute;taill&eacute;es
-          dans notre <a href="/confidentialite" className="text-primary hover:underline">Politique de confidentialit&eacute;</a>.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Cookies</h2>
-        <p className="text-sm text-muted leading-relaxed">
-          Orga&apos;Scol utilise uniquement des cookies techniques strictement n&eacute;cessaires au
-          fonctionnement du service (authentification, pr&eacute;f&eacute;rences de th&egrave;me). Aucun cookie
-          publicitaire ou de tra&ccedil;age n&apos;est utilis&eacute;.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Contact</h2>
-        <p className="text-sm text-muted leading-relaxed">
-          Pour toute question concernant ces mentions l&eacute;gales, vous pouvez nous contacter
-          &agrave; l&apos;adresse : <strong>contact@orgascol.fr</strong>
-        </p>
-      </section>
+        <a
+          href="mailto:contact@orgascol.fr"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 rounded-xl font-semibold text-sm hover:shadow-lg transition-shadow"
+        >
+          <Mail className="w-4 h-4" />
+          Contacter
+        </a>
+        <p className="text-xs text-white/40 pt-2">Dernière mise à jour : Octobre 2026</p>
+      </div>
     </div>
   );
 }
