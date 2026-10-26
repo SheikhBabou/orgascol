@@ -30,48 +30,56 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar — morphs on scroll */}
+      {/* Navbar — full-width, morphs on scroll */}
       <header
-        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl flex items-center gap-6 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-card-bg/70 backdrop-blur-xl border border-border shadow-lg"
+            ? "bg-card-bg/80 backdrop-blur-xl border-b border-border shadow-sm"
             : "bg-transparent"
         }`}
         style={{ transitionTimingFunction: "var(--ease-magnetic)" }}
       >
-        <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-          className="flex items-center gap-2 cursor-pointer"
-        >
-          <GraduationCap className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-primary" : "text-white"}`} />
-          <span className={`text-lg font-bold transition-colors duration-300 ${scrolled ? "text-foreground" : "text-white"}`}>
-            Orga&apos;Scol
-          </span>
-        </a>
-        <nav className="hidden md:flex items-center gap-4">
-          {["Fonctionnalités", "Méthode", "Tarifs"].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className={`text-sm font-medium transition-colors duration-300 hover:text-primary ${
-                scrolled ? "text-muted" : "text-white/70 hover:text-white"
-              }`}
-            >
-              {item}
-            </a>
-          ))}
-        </nav>
-        <Link
-          href="/auth?plan=mensuel"
-          className={`ml-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-300 btn-magnetic ${
-            scrolled
-              ? "bg-primary text-white"
-              : "bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25"
-          }`}
-        >
-          Commencer
-        </Link>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <a
+            href="#"
+            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className="flex items-center gap-2 cursor-pointer shrink-0"
+          >
+            <GraduationCap className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-primary" : "text-white"}`} />
+            <span className={`text-lg font-bold transition-colors duration-300 ${scrolled ? "text-foreground" : "text-white"}`}>
+              Orga&apos;Scol
+            </span>
+          </a>
+          <nav className="hidden md:flex items-center gap-8">
+            {[
+              { label: "Fonctionnalités", href: "#fonctionnalités" },
+              { label: "Méthode", href: "#méthode" },
+              { label: "Tarifs", href: "#tarifs" },
+              { label: "FAQ", href: "/faq" },
+              { label: "Contact", href: "/contact" },
+            ].map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                className={`text-sm font-medium transition-colors duration-300 ${
+                  scrolled ? "text-muted hover:text-foreground" : "text-white/70 hover:text-white"
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+          <Link
+            href="/auth?plan=mensuel"
+            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-magnetic ${
+              scrolled
+                ? "bg-primary text-white"
+                : "bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25"
+            }`}
+          >
+            Commencer
+          </Link>
+        </div>
       </header>
 
       {/* Hero */}
@@ -97,10 +105,10 @@ export default function Home() {
               1 mois d&apos;essai gratuit — sans engagement
             </div>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
-              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
+              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] font-[family-name:var(--font-playfair)]">
                 Planifie tes révisions,
               </span>
-              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mt-2"
+              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mt-2 font-[family-name:var(--font-playfair)]"
                 style={{ color: "#c4b5fd" }}>
                 réussis tes examens.
               </span>
@@ -150,7 +158,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Fonctionnalités
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
               Tout ce qu&apos;il te faut pour{" "}
               <span className="text-primary">cartonner</span>
             </h2>
@@ -251,7 +259,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Comment ça marche
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
               3 étapes, <span className="text-primary">0 prise de tête</span>
             </h2>
           </div>
@@ -298,7 +306,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Tarifs
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
               Un prix simple,{" "}
               <span className="text-primary">tout inclus</span>
             </h2>
@@ -396,7 +404,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
                 Prêt à organiser tes révisions ?
               </h2>
               <p className="text-white/70 text-lg max-w-xl mx-auto">
