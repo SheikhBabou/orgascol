@@ -76,20 +76,26 @@ export default function SubscriptionPage() {
     const startDate = new Date(createdAt);
     const trialEnd = new Date(startDate);
     trialEnd.setMonth(trialEnd.getMonth() + 1);
-    trialEnd.setDate(1);
 
     const now = new Date();
     const isInTrial = now < trialEnd;
 
     const plan = (user.user_metadata?.plan as Plan) || "mensuel";
 
+    const nextBillingDate = new Date(trialEnd);
+    if (!isInTrial) {
+      nextBillingDate.setTime(now.getTime());
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+      nextBillingDate.setDate(trialEnd.getDate());
+    }
+
     setSub({
       plan,
       status: isInTrial ? "trial" : "active",
       startDate: startDate.toISOString(),
       trialEnd: trialEnd.toISOString(),
-      nextBilling: isInTrial ? trialEnd.toISOString() : new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
-      endDate: plan === "annuel" ? new Date(startDate.getFullYear(), startDate.getMonth() + 10, 1).toISOString() : null,
+      nextBilling: nextBillingDate.toISOString(),
+      endDate: plan === "annuel" ? new Date(startDate.getFullYear(), startDate.getMonth() + 11, startDate.getDate()).toISOString() : null,
       card: null,
     });
 
