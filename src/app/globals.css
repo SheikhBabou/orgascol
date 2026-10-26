@@ -32,19 +32,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --background: #0b1120;
-    --foreground: #f1f5f9;
-    --primary: #818cf8;
-    --primary-hover: #6366f1;
-    --primary-light: #1e1b4b;
-    --sidebar-bg: #111827;
-    --card-bg: #1a2234;
-    --border: #1e3048;
-    --muted: #94a3b8;
-  }
-}
+/* Dark mode only when explicitly set via data-theme, never auto-detected */
 
 :root[data-theme="dark"] {
   --background: #0b1120;
@@ -173,11 +161,6 @@ body::before {
   border-color: var(--primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .card-interactive:hover {
-    box-shadow: 0 8px 25px -5px rgba(129, 140, 248, 0.12), 0 4px 10px -3px rgba(0, 0, 0, 0.3);
-  }
-}
 :root[data-theme="dark"] .card-interactive:hover {
   box-shadow: 0 8px 25px -5px rgba(129, 140, 248, 0.12), 0 4px 10px -3px rgba(0, 0, 0, 0.3);
 }
@@ -247,11 +230,6 @@ input, select, textarea {
   -webkit-backdrop-filter: blur(12px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .glass-card {
-    background: rgba(26, 34, 52, 0.7);
-  }
-}
 :root[data-theme="dark"] .glass-card {
   background: rgba(26, 34, 52, 0.7);
 }
