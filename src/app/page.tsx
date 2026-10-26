@@ -62,7 +62,7 @@ export default function Home() {
           ))}
         </nav>
         <Link
-          href="/auth"
+          href="/auth?plan=mensuel"
           className={`ml-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-300 btn-magnetic ${
             scrolled
               ? "bg-primary text-white"
@@ -111,7 +111,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4 animate-hero-text" style={{ animationDelay: "0.45s" }}>
               <Link
-                href="/auth"
+                href="/auth?plan=mensuel"
                 className="group inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 rounded-2xl font-semibold text-base btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.3)]"
               >
                 Essayer gratuitement
@@ -403,7 +403,7 @@ export default function Home() {
                 Aucune carte bancaire demandée à l&apos;inscription.
               </p>
               <Link
-                href="/auth"
+                href="/auth?plan=mensuel"
                 className="group inline-flex items-center gap-2 px-10 py-4 bg-white text-indigo-700 rounded-2xl font-bold text-lg btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.4)]"
               >
                 Commencer mon essai gratuit

@@ -83,18 +83,16 @@ function AuthContent() {
           </h2>
           <p className="text-white/50 leading-relaxed">
             Rejoins les étudiants qui planifient intelligemment. 1 mois
-            d&apos;essai gratuit, puis {plan === "mensuel" ? "11,99€/mois" : plan === "annuel" ? "9,99€/mois (annuel)" : "à partir de 9,99€/mois"}.
+            d&apos;essai gratuit, puis {plan === "annuel" ? "9,99€/mois (annuel)" : "11,99€/mois"}.
           </p>
-          {plan && (
-            <div className="mt-4 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 animate-fade-in">
-              <p className="text-sm font-semibold text-white">
-                Plan {plan === "annuel" ? "Annuel" : "Mensuel"} sélectionné
-              </p>
-              <p className="text-xs text-white/50 mt-1">
-                {plan === "annuel" ? "9,99€/mois · 99,90€/année scolaire · Engagement 10 mois · Paiement mensuel ou en une fois" : "11,99€/mois · Résiliable à tout moment"}
-              </p>
-            </div>
-          )}
+          <div className="mt-4 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 animate-fade-in">
+            <p className="text-sm font-semibold text-white">
+              Plan {plan === "annuel" ? "Annuel" : "Mensuel"} sélectionné
+            </p>
+            <p className="text-xs text-white/50 mt-1">
+              {plan === "annuel" ? "9,99€/mois · 99,90€/année scolaire · Engagement 10 mois · Paiement mensuel ou en une fois" : "11,99€/mois · Résiliable à tout moment"}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -115,11 +113,9 @@ function AuthContent() {
             <p className="text-sm text-muted">
               {isLogin
                 ? "Connecte-toi pour retrouver ton planning."
-                : plan === "mensuel"
-                  ? "1 mois gratuit, puis 11,99€/mois. Aucune carte bancaire requise."
-                  : plan === "annuel"
-                    ? "1 mois gratuit, puis 9,99€/mois. Aucune carte bancaire requise."
-                    : "1 mois d'essai gratuit. Aucune carte bancaire requise."}
+                : plan === "annuel"
+                  ? "1 mois gratuit, puis 9,99€/mois. Aucune carte bancaire requise."
+                  : "1 mois gratuit, puis 11,99€/mois. Aucune carte bancaire requise."}
             </p>
           </div>
 
