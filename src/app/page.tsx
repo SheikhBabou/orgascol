@@ -105,10 +105,10 @@ export default function Home() {
               1 mois d&apos;essai gratuit — sans engagement
             </div>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
-              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] font-[family-name:var(--font-playfair)]">
+              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
                 Planifie tes révisions,
               </span>
-              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mt-2 font-[family-name:var(--font-playfair)]"
+              <span className="block text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mt-2"
                 style={{ color: "#c4b5fd" }}>
                 réussis tes examens.
               </span>
@@ -158,7 +158,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Fonctionnalités
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Tout ce qu&apos;il te faut pour{" "}
               <span className="text-primary">cartonner</span>
             </h2>
@@ -259,7 +259,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Comment ça marche
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               3 étapes, <span className="text-primary">0 prise de tête</span>
             </h2>
           </div>
@@ -306,7 +306,7 @@ export default function Home() {
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
               Tarifs
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Un prix simple,{" "}
               <span className="text-primary">tout inclus</span>
             </h2>
@@ -404,7 +404,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
                 Prêt à organiser tes révisions ?
               </h2>
               <p className="text-white/70 text-lg max-w-xl mx-auto">
