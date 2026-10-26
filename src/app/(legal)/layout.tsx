@@ -7,7 +7,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen flex flex-col">
       {/* Full-width navbar */}
       <header className="sticky top-0 z-50 bg-card-bg/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between font-[family-name:var(--font-playfair)]">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <GraduationCap className="w-6 h-6 text-primary" />
