@@ -8,7 +8,7 @@ import {
   Crown,
   AlertTriangle,
   Check,
-  Loader2,
+  Clock,
   Shield,
   RefreshCw,
   XCircle,
@@ -137,7 +137,7 @@ export default function SubscriptionPage() {
       {/* Trial banner */}
       {sub.status === "trial" && (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 animate-fade-in">
-          <Loader2 className="w-5 h-5 text-primary shrink-0 mt-0.5 animate-spin" />
+          <Clock className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold">Période d&apos;essai en cours</p>
             <p className="text-xs text-muted mt-0.5">
