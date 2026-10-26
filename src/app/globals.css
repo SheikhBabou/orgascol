@@ -199,11 +199,33 @@ a[class*="bg-primary"]:active {
   transform: scale(0.97);
 }
 
+/* Navbar link underline */
+.nav-link {
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 60%;
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--primary);
+  transition: transform 0.25s var(--ease-magnetic);
+}
+.nav-link:hover::after,
+.nav-link:active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
 /* Sidebar nav links */
-nav a {
+nav:not(.hidden) a:not(.nav-link) {
   transition: all 0.25s var(--ease-magnetic);
 }
-nav a:hover {
+nav:not(.hidden) a:not(.nav-link):hover {
   transform: translateX(2px);
 }
 

@@ -52,6 +52,7 @@ export default function Home() {
           </a>
           <nav className="hidden md:flex items-center gap-8">
             {[
+              { label: "Accueil", href: "#" },
               { label: "Fonctionnalités", href: "#fonctionnalités" },
               { label: "Méthode", href: "#méthode" },
               { label: "Tarifs", href: "#tarifs" },
@@ -61,7 +62,7 @@ export default function Home() {
               <a
                 key={label}
                 href={href}
-                className={`text-sm font-medium transition-colors duration-300 ${
+                className={`nav-link text-sm font-medium transition-colors duration-300 ${
                   scrolled ? "text-muted hover:text-foreground" : "text-white/70 hover:text-white"
                 }`}
               >

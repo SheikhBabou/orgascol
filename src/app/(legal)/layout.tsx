@@ -29,7 +29,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
               <Link
                 key={label}
                 href={href}
-                className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+                className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
               >
                 {label}
               </Link>
