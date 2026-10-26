@@ -143,7 +143,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="fonctionnalités" className="py-24 px-6">
+      <section id="fonctionnalités" className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16 stagger-children">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
@@ -214,7 +214,7 @@ export default function Home() {
       </section>
 
       {/* Method / Philosophy */}
-      <section id="méthode" className="py-24 px-6 bg-foreground text-background relative overflow-hidden">
+      <section id="méthode" className="py-16 px-6 bg-foreground text-background relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
@@ -244,7 +244,7 @@ export default function Home() {
       </section>
 
       {/* Steps */}
-      <section className="py-24 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16 stagger-children">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
@@ -291,7 +291,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="tarifs" className="py-24 px-6">
+      <section id="tarifs" className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16 stagger-children">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
@@ -350,13 +350,13 @@ export default function Home() {
               </div>
               <div className="relative">
                 <h3 className="text-lg font-semibold">Annuel</h3>
-                <p className="text-sm text-white/60 mt-1">Engagement 12 mois, meilleur prix</p>
+                <p className="text-sm text-white/60 mt-1">Engagement année scolaire (10 mois), meilleur prix</p>
               </div>
               <div className="relative flex items-baseline gap-1">
                 <span className="text-4xl font-bold">9,99€</span>
                 <span className="text-white/60">/mois</span>
               </div>
-              <p className="text-xs text-white/40 -mt-3">Soit 119,88€/an facturé en une fois</p>
+              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire, facturé en une fois</p>
               <ul className="relative space-y-3">
                 {[
                   "1 mois d'essai gratuit",
@@ -384,13 +384,13 @@ export default function Home() {
 
           <p className="text-center text-xs text-muted mt-8">
             Essai gratuit de 30 jours. Aucun paiement requis avant le 1er du mois suivant.
-            L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de la période.
+            L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de l&apos;année scolaire.
           </p>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto text-center stagger-children">
           <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
