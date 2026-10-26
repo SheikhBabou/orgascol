@@ -38,12 +38,16 @@ export default function Home() {
         }`}
         style={{ transitionTimingFunction: "var(--ease-magnetic)" }}
       >
-        <div className="flex items-center gap-2">
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <GraduationCap className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-primary" : "text-white"}`} />
           <span className={`text-lg font-bold transition-colors duration-300 ${scrolled ? "text-foreground" : "text-white"}`}>
             Orga&apos;Scol
           </span>
-        </div>
+        </a>
         <nav className="hidden md:flex items-center gap-4">
           {["Fonctionnalités", "Méthode", "Tarifs"].map((item) => (
             <a
@@ -415,10 +419,14 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <GraduationCap className="w-7 h-7 text-primary" />
                 <span className="text-xl font-bold">Orga&apos;Scol</span>
-              </div>
+              </a>
               <p className="text-sm text-white/40 max-w-xs">
                 L&apos;outil de planification de révisions qui aide les étudiants
                 à s&apos;organiser et réussir.
