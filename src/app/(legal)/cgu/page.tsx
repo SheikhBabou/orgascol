@@ -61,7 +61,7 @@ export default function CGUPage() {
           </div>
           <div>
             <p className="font-medium">Abonnement Mensuel</p>
-            <p className="text-muted mt-0.5">11,99&euro;/mois, r&eacute;siliable &agrave; tout moment. Le paiement d&eacute;bute le 1er du mois suivant la fin de l&apos;essai.</p>
+            <p className="text-muted mt-0.5">11,99&euro;/mois, r&eacute;siliable &agrave; tout moment. Le premier paiement intervient &agrave; la fin de la p&eacute;riode d&apos;essai (30 jours apr&egrave;s l&apos;inscription).</p>
           </div>
           <div>
             <p className="font-medium">Abonnement Annuel (ann&eacute;e scolaire)</p>

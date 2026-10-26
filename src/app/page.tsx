@@ -302,7 +302,7 @@ export default function Home() {
               <span className="text-primary">tout inclus</span>
             </h2>
             <p className="text-muted mt-4">
-              1 mois d&apos;essai gratuit. Le paiement commence le 1er du mois suivant ton inscription.
+              1 mois d&apos;essai gratuit. Le paiement commence 30 jours apr&egrave;s ton inscription.
             </p>
           </div>
 
@@ -383,7 +383,7 @@ export default function Home() {
           </div>
 
           <p className="text-center text-xs text-muted mt-8">
-            Essai gratuit de 30 jours. Aucun paiement requis avant le 1er du mois suivant.
+            Essai gratuit de 30 jours. Aucun paiement requis pendant la p&eacute;riode d&apos;essai.
             L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de l&apos;année scolaire.
           </p>
         </div>
