@@ -46,6 +46,11 @@ function AuthContent() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            plan: plan === "annuel" ? "annuel" : "mensuel",
+          },
+        },
       });
       if (error) {
         setError(error.message);
@@ -99,11 +104,16 @@ function AuthContent() {
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm space-y-8 animate-fade-in">
-          <div className="lg:hidden flex items-center gap-2 mb-4">
+          <div className="lg:hidden space-y-3 mb-4">
             <Link href="/" className="flex items-center gap-2">
               <GraduationCap className="w-8 h-8 text-primary" />
               <span className="text-xl font-bold">Orga&apos;Scol</span>
             </Link>
+            <div className="px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20">
+              <p className="text-xs font-semibold text-primary">
+                Plan {plan === "annuel" ? "Annuel" : "Mensuel"} — {plan === "annuel" ? "9,99€/mois" : "11,99€/mois"}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-2">

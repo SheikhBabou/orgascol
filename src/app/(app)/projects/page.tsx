@@ -7,6 +7,7 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Project, Subject, ProjectStatus } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
+import EmptyState from "@/components/empty-state";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -231,12 +232,12 @@ export default function ProjectsPage() {
       )}
 
       {projects.length === 0 && !showForm ? (
-        <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
-          <FolderOpen className="w-10 h-10 text-muted mx-auto mb-3" />
-          <p className="text-muted">
-            Aucun projet pour le moment. Ajoute ton premier projet !
-          </p>
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          title="Aucun projet"
+          description="Ajoute tes projets et travaux de groupe pour suivre les échéances."
+          action={{ label: "Ajouter un projet", onClick: () => setShowForm(true) }}
+        />
       ) : (
         <div className="space-y-3 stagger-children">
           {projects.map((project) => {

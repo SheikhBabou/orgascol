@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { RefreshCw, CheckCircle2, SkipForward } from "lucide-react";
+import { RefreshCw, CheckCircle2, SkipForward, CalendarDays } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { generatePlanning } from "@/utils/planning";
 import type { Exam, ScheduleSlot, RevisionSession, SessionStatus } from "@/types/database";
+import EmptyState from "@/components/empty-state";
 
 const METHOD_LABELS: Record<string, string> = {
   first_read: "1re lecture",
@@ -153,15 +154,12 @@ export default function PlanningPage() {
       </div>
 
       {dates.length === 0 ? (
-        <div className="bg-card-bg border border-border rounded-xl p-12 text-center space-y-4">
-          <p className="text-muted">
-            Aucune session de révision planifiée.
-          </p>
-          <p className="text-sm text-muted">
-            Ajoute des examens avec des chapitres, renseigne ton emploi du
-            temps, puis clique sur &quot;Générer le planning&quot;.
-          </p>
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title="Aucune session planifiée"
+          description="Ajoute des examens avec des chapitres, renseigne ton emploi du temps, puis génère ton planning."
+          action={{ label: "Générer le planning", onClick: handleGenerate }}
+        />
       ) : (
         <div className="space-y-6 stagger-children">
           {dates.map((date) => (

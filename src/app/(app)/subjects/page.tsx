@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Palette } from "lucide-react";
+import { Plus, Trash2, Palette, Layers } from "lucide-react";
 import type { Subject } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
+import EmptyState from "@/components/empty-state";
 
 const COLORS = [
   "#6366f1", "#ec4899", "#f59e0b", "#22c55e", "#3b82f6",
@@ -158,11 +159,11 @@ export default function SubjectsPage() {
 
       {/* Subjects list */}
       {subjects.length === 0 ? (
-        <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
-          <p className="text-muted">
-            Aucune matière. Ajoute tes matières ci-dessus !
-          </p>
-        </div>
+        <EmptyState
+          icon={Layers}
+          title="Aucune matière"
+          description="Ajoute tes matières pour commencer à organiser tes examens et révisions."
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">
           {subjects.map((subject) => (

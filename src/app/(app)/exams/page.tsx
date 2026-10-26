@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Pencil, X } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Pencil, X, BookOpen } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Exam, Subject, ChapterStatus } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
+import EmptyState from "@/components/empty-state";
 
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
@@ -329,11 +330,12 @@ export default function ExamsPage() {
       )}
 
       {exams.length === 0 && !showForm ? (
-        <div className="bg-card-bg border border-border rounded-xl p-12 text-center">
-          <p className="text-muted">
-            Aucun examen pour le moment. Commence par en ajouter un !
-          </p>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="Aucun examen"
+          description="Ajoute ton premier examen pour que le planning de révisions puisse se générer."
+          action={{ label: "Ajouter un examen", onClick: () => setShowForm(true) }}
+        />
       ) : (
         <div className="space-y-3 stagger-children">
           {exams.map((exam) => {

@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Bell,
   FolderOpen,
+  Sparkles,
 } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -35,6 +36,7 @@ export default function DashboardPage() {
     upcomingExams: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -42,6 +44,10 @@ export default function DashboardPage() {
   }, []);
 
   async function loadDashboard() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email) {
+      setUserName(user.email.split("@")[0]);
+    }
     const today = format(new Date(), "yyyy-MM-dd");
 
     const [examsRes, sessionsRes, chaptersRes, projectsRes] = await Promise.all([
@@ -129,13 +135,32 @@ export default function DashboardPage() {
       ? Math.round((stats.completedChapters / stats.totalChapters) * 100)
       : 0;
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Tableau de bord</h1>
-        <p className="text-muted text-sm mt-1">
-          {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{greeting}{userName ? `, ${userName}` : ""} 👋</h1>
+          <p className="text-muted text-sm mt-1">
+            {format(new Date(), "EEEE d MMMM yyyy", { locale: fr })}
+          </p>
+        </div>
+        {stats.totalChapters > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-card-bg border border-border rounded-xl">
+            <Sparkles className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex items-center gap-3">
+              <div className="w-32 h-2 rounded-full bg-border overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-purple-500 transition-all duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <span className="text-sm font-semibold text-primary whitespace-nowrap">{progressPercent}%</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Alerts */}
