@@ -1,259 +1,229 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GraduationCap, X, ExternalLink } from "lucide-react";
 
-const footerPages: Record<string, { title: string; href: string; content: React.ReactNode }> = {
-  "mentions-legales": {
-    title: "Mentions légales",
-    href: "/mentions-legales",
-    content: (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { label: "Nom du service", value: "Orga'Scol" },
-            { label: "Statut", value: "Micro-entreprise" },
-            { label: "Pays", value: "France" },
-            { label: "Email de contact", value: "contact@orgascol.fr" },
-          ].map(({ label, value }) => (
-            <div key={label} className="p-4 rounded-xl bg-white/5 border border-white/10">
-              <p className="text-xs text-white/40">{label}</p>
-              <p className="font-semibold text-sm text-white mt-1">{value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="space-y-3">
-          <h4 className="font-semibold text-white/80">Hébergement</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-              <p className="font-semibold text-sm text-white">Vercel Inc.</p>
-              <p className="text-xs text-white/40 mt-1">Hébergement de l&apos;application</p>
-            </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-              <p className="font-semibold text-sm text-white">Supabase Inc.</p>
-              <p className="text-xs text-white/40 mt-1">Base de données &amp; authentification</p>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-2 text-sm text-white/50 leading-relaxed">
-          <p>L&apos;ensemble du contenu du site est protégé par le droit d&apos;auteur. Toute reproduction est interdite sans autorisation.</p>
-          <p>Les présentes mentions sont régies par le droit français. En cas de litige, les tribunaux compétents seront ceux du ressort du siège social de l&apos;éditeur.</p>
-        </div>
-      </div>
-    ),
-  },
-  confidentialite: {
-    title: "Politique de confidentialité",
-    href: "/confidentialite",
-    content: (
-      <div className="space-y-4 text-sm text-white/50 leading-relaxed">
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Données collectées</h4>
-          <p>Email, mot de passe (chiffré), plan choisi, matières, examens, notes, emploi du temps, projets et sessions de révision.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Utilisation</h4>
-          <p>Tes données servent uniquement au fonctionnement du service (planning, moyennes, alertes). Aucun profilage publicitaire, jamais de vente à des tiers.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Prestataires</h4>
-          <p>Supabase (BDD), Vercel (hébergement), Stripe (paiements). Tous conformes au RGPD.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Tes droits</h4>
-          <p>Accès, rectification, suppression, portabilité. Contacte contact@orgascol.fr pour exercer ces droits.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Sécurité</h4>
-          <p>Chiffrement SSL/TLS, mots de passe hashés, Row Level Security, aucun cookie publicitaire.</p>
-        </div>
-      </div>
-    ),
-  },
-  cgu: {
-    title: "Conditions Générales d'Utilisation",
-    href: "/cgu",
-    content: (
-      <div className="space-y-4 text-sm text-white/50 leading-relaxed">
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Tarifs</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-              <p className="font-semibold text-sm text-white">Mensuel — 11,99€/mois</p>
-              <p className="text-xs text-white/40 mt-1">Résiliable à tout moment</p>
-            </div>
-            <div className="p-4 rounded-xl bg-primary/20 border border-primary/30">
-              <p className="font-semibold text-sm text-white">Annuel — 9,99€/mois</p>
-              <p className="text-xs text-white/40 mt-1">99,90€ sur 10 mois</p>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Essai gratuit</h4>
-          <p>1 mois gratuit dès l&apos;inscription. Aucune carte bancaire requise. Premier paiement 30 jours après l&apos;inscription.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Résiliation</h4>
-          <p>Mensuel : résiliable à tout moment, accès jusqu&apos;à la fin du mois. Annuel : engagement sur l&apos;année scolaire (10 mois).</p>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white/80 mb-2">Remboursements</h4>
-          <p>Possibles en cas de problème technique majeur, double facturation ou fermeture injustifiée. Demande sous 30 jours à contact@orgascol.fr.</p>
-        </div>
-      </div>
-    ),
-  },
-  faq: {
-    title: "Questions fréquentes",
-    href: "/faq",
-    content: (
-      <div className="space-y-4 text-sm text-white/50 leading-relaxed">
-        {[
-          { q: "Comment fonctionne l'essai gratuit ?", a: "1 mois gratuit dès l'inscription. Toutes les fonctionnalités accessibles. Aucune carte bancaire requise." },
-          { q: "Quels sont les tarifs ?", a: "Mensuel à 11,99€/mois (résiliable) ou Annuel à 9,99€/mois soit 99,90€ l'année scolaire (10 mois)." },
-          { q: "Comment annuler mon abonnement ?", a: "Mensuel : depuis la page Abonnement en un clic. Annuel : engagement sur l'année scolaire." },
-          { q: "Comment fonctionne le planning ?", a: "Ajoute tes examens et dates, génère ton planning. Orga'Scol répartit les sessions avec la répétition espacée." },
-          { q: "Comment importer mon emploi du temps ?", a: "Colle ton lien iCal depuis ton ENT ou Google Calendar. Import en un clic." },
-          { q: "Mes données sont-elles protégées ?", a: "Chiffrement SSL/TLS, mots de passe hashés, Row Level Security. Aucun cookie publicitaire." },
-        ].map(({ q, a }) => (
-          <div key={q} className="p-4 rounded-xl bg-white/5 border border-white/10">
-            <p className="font-semibold text-sm text-white">{q}</p>
-            <p className="text-xs text-white/40 mt-2">{a}</p>
-          </div>
-        ))}
-      </div>
-    ),
-  },
-  contact: {
-    title: "Contact",
-    href: "/contact",
-    content: (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-xs text-white/40">Email</p>
-            <p className="font-semibold text-sm text-white mt-1">contact@orgascol.fr</p>
-          </div>
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-xs text-white/40">Délai de réponse</p>
-            <p className="font-semibold text-sm text-white mt-1">Sous 24-48h ouvrées</p>
-          </div>
-        </div>
-        <p className="text-sm text-white/50">
-          Pour un formulaire de contact complet, visite la page dédiée.
-        </p>
-      </div>
-    ),
-  },
-};
+type PageKey =
+  | "mentions-legales"
+  | "confidentialite"
+  | "cgu"
+  | "faq"
+  | "contact";
+
+const PAGES: { key: PageKey; title: string; shortTitle: string; href: string }[] = [
+  { key: "mentions-legales", title: "Mentions légales", shortTitle: "Mentions", href: "/mentions-legales" },
+  { key: "confidentialite", title: "Politique de confidentialité", shortTitle: "Confidentialité", href: "/confidentialite" },
+  { key: "cgu", title: "Conditions Générales d'Utilisation", shortTitle: "CGU", href: "/cgu" },
+  { key: "faq", title: "Questions fréquentes", shortTitle: "FAQ", href: "/faq" },
+  { key: "contact", title: "Contact", shortTitle: "Contact", href: "/contact" },
+];
 
 export default function Footer() {
-  const [activePage, setActivePage] = useState<string | null>(null);
+  const [activePage, setActivePage] = useState<PageKey | null>(null);
 
-  function handleClick(key: string) {
-    setActivePage((prev) => (prev === key ? null : key));
-  }
+  useEffect(() => {
+    if (activePage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activePage]);
 
-  const activeData = activePage ? footerPages[activePage] : null;
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setActivePage(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const activeData = PAGES.find((p) => p.key === activePage);
 
   return (
-    <footer className="bg-foreground text-background rounded-t-[3rem] mt-auto">
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        {/* Expanded content panel */}
-        {activeData && (
-          <div className="mb-12 animate-fade-in">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">{activeData.title}</h3>
-              <div className="flex items-center gap-3">
-                <a
-                  href={activeData.href}
-                  className="flex items-center gap-1.5 text-xs text-white/40 hover:text-primary transition-colors"
-                >
-                  Page complète
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-                <button
-                  onClick={() => setActivePage(null)}
-                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
-                >
-                  <X className="w-4 h-4 text-white/60" />
-                </button>
+    <>
+      {/* ── Modal overlay ── */}
+      {activePage && activeData && (
+        <div className="fixed inset-0 z-[60] flex flex-col">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setActivePage(null)}
+          />
+
+          {/* Content panel */}
+          <div className="relative z-10 flex-1 flex flex-col items-center pt-6 pb-4 px-4 min-h-0">
+            <div className="w-full max-w-4xl flex-1 flex flex-col min-h-0">
+              {/* Header bar */}
+              <div className="flex items-center justify-between bg-card-bg/95 backdrop-blur-xl rounded-t-2xl px-6 py-4 border border-border border-b-0 shrink-0">
+                <h2 className="font-bold text-foreground truncate mr-4">
+                  {activeData.title}
+                </h2>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={activeData.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-foreground hover:bg-background transition-colors"
+                    title="Ouvrir dans un nouvel onglet"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                  <button
+                    onClick={() => setActivePage(null)}
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted hover:text-danger hover:bg-danger/10 hover:border-danger/30 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Iframe content */}
+              <div className="flex-1 bg-background rounded-b-2xl border border-t-0 border-border overflow-hidden min-h-0 shadow-2xl">
+                <iframe
+                  key={activePage}
+                  src={`${activeData.href}?embed=1`}
+                  className="w-full h-full border-0"
+                  title={activeData.title}
+                />
               </div>
             </div>
-            <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-              {activeData.content}
-            </div>
-            <div className="mt-6 pt-6 border-t border-white/10" />
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="space-y-4">
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <GraduationCap className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold">Orga&apos;Scol</span>
-            </a>
-            <p className="text-sm text-white/40 max-w-xs">
-              L&apos;outil de planification de révisions qui aide les étudiants
-              à s&apos;organiser et réussir.
+          {/* Compact footer bar for switching pages */}
+          <div className="relative z-10 bg-foreground text-background shrink-0 px-4 py-4">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <GraduationCap className="w-5 h-5 text-primary" />
+                <span className="font-bold text-sm hidden sm:inline">
+                  Orga&apos;Scol
+                </span>
+              </div>
+              <div className="flex items-center gap-1 overflow-x-auto">
+                {PAGES.map((page) => (
+                  <button
+                    key={page.key}
+                    onClick={() => setActivePage(page.key)}
+                    className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      activePage === page.key
+                        ? "bg-primary text-white"
+                        : "text-white/50 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {page.shortTitle}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Normal footer ── */}
+      <footer className="relative z-50 bg-foreground text-background rounded-t-[3rem] mt-auto">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Logo */}
+            <div className="space-y-4">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <GraduationCap className="w-7 h-7 text-primary" />
+                <span className="text-xl font-bold">Orga&apos;Scol</span>
+              </a>
+              <p className="text-sm text-white/40 max-w-xs">
+                L&apos;outil de planification de révisions qui aide les
+                étudiants à s&apos;organiser et réussir.
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse-dot" />
+                <span className="text-xs font-mono text-white/40">
+                  Système opérationnel
+                </span>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">
+                Navigation
+              </h4>
+              <div className="space-y-2">
+                {[
+                  { label: "Accueil", anchor: "#" },
+                  { label: "Comment ça marche", anchor: "#fonctionnalités" },
+                  { label: "Tarifs", anchor: "#tarifs" },
+                ].map(({ label, anchor }) => (
+                  <a
+                    key={label}
+                    href={anchor}
+                    className="block text-sm text-white/40 hover:text-white transition-colors"
+                  >
+                    {label}
+                  </a>
+                ))}
+                {(["faq", "contact"] as PageKey[]).map((key) => {
+                  const page = PAGES.find((p) => p.key === key)!;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActivePage(key)}
+                      className={`block text-sm transition-colors text-left ${
+                        activePage === key
+                          ? "text-primary font-medium"
+                          : "text-white/40 hover:text-white"
+                      }`}
+                    >
+                      {page.title}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Légal */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">
+                Légal
+              </h4>
+              <div className="space-y-2">
+                {(["mentions-legales", "confidentialite", "cgu"] as PageKey[]).map(
+                  (key) => {
+                    const page = PAGES.find((p) => p.key === key)!;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setActivePage(key)}
+                        className={`block text-sm transition-colors text-left ${
+                          activePage === key
+                            ? "text-primary font-medium"
+                            : "text-white/40 hover:text-white"
+                        }`}
+                      >
+                        {page.title}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 mt-12 pt-8 text-center">
+            <p className="text-xs text-white/30">
+              &copy; {new Date().getFullYear()} Orga&apos;Scol. Tous droits
+              réservés.
             </p>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse-dot" />
-              <span className="text-xs font-mono text-white/40">Système opérationnel</span>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">Navigation</h4>
-            <div className="space-y-2">
-              {[
-                { label: "Accueil", anchor: "#" },
-                { label: "Comment ça marche", anchor: "#fonctionnalités" },
-                { label: "Tarifs", anchor: "#tarifs" },
-              ].map(({ label, anchor }) => (
-                <a key={label} href={anchor} className="block text-sm text-white/40 hover:text-white transition-colors">
-                  {label}
-                </a>
-              ))}
-              {(["faq", "contact"] as const).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => handleClick(key)}
-                  className={`block text-sm transition-colors text-left ${
-                    activePage === key ? "text-primary font-medium" : "text-white/40 hover:text-white"
-                  }`}
-                >
-                  {footerPages[key].title}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">Légal</h4>
-            <div className="space-y-2">
-              {(["mentions-legales", "confidentialite", "cgu"] as const).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => handleClick(key)}
-                  className={`block text-sm transition-colors text-left ${
-                    activePage === key ? "text-primary font-medium" : "text-white/40 hover:text-white"
-                  }`}
-                >
-                  {footerPages[key].title}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
-        <div className="border-t border-white/10 mt-12 pt-8 text-center">
-          <p className="text-xs text-white/30">
-            &copy; {new Date().getFullYear()} Orga&apos;Scol. Tous droits réservés.
-          </p>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
