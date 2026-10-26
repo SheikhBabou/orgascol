@@ -15,6 +15,7 @@ import {
   Calculator,
   FolderOpen,
   Settings,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -81,6 +82,18 @@ export default function Sidebar() {
         >
           <Settings className="w-5 h-5" />
           Paramètres
+        </Link>
+        <Link
+          href="/subscription"
+          onClick={() => setMobileOpen(false)}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname.startsWith("/subscription")
+              ? "bg-primary-light text-primary"
+              : "text-muted hover:bg-primary-light/50 hover:text-foreground"
+          }`}
+        >
+          <CreditCard className="w-5 h-5" />
+          Abonnement
         </Link>
         <button
           onClick={handleLogout}
