@@ -40,7 +40,7 @@ function AuthContent() {
       if (error) {
         setError(error.message);
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } else {
       const { error } = await supabase.auth.signUp({

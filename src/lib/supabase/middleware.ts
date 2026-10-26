@@ -29,21 +29,31 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    request.nextUrl.pathname !== "/"
-  ) {
+  const pathname = request.nextUrl.pathname;
+
+  const isPublic =
+    pathname === "/" ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/mentions-legales") ||
+    pathname.startsWith("/confidentialite") ||
+    pathname.startsWith("/cgu");
+
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
     return NextResponse.redirect(url);
   }
 
-  if (user && request.nextUrl.pathname === "/auth") {
+  if (user && pathname === "/auth") {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
+
+  supabaseResponse.headers.set(
+    "Cache-Control",
+    "no-cache, no-store, must-revalidate"
+  );
 
   return supabaseResponse;
 }

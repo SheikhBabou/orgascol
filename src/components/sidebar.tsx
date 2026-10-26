@@ -39,7 +39,7 @@ export default function Sidebar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/auth");
+    window.location.href = "/auth";
   }
 
   const navContent = (
