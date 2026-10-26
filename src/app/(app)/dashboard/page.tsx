@@ -45,8 +45,9 @@ export default function DashboardPage() {
 
   async function loadDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) {
-      setUserName(user.email.split("@")[0]);
+    if (user) {
+      const first = user.user_metadata?.first_name;
+      setUserName(first || user.email?.split("@")[0] || "");
     }
     const today = format(new Date(), "yyyy-MM-dd");
 

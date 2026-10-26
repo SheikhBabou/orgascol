@@ -267,10 +267,13 @@ export default function SubscriptionPage() {
                   : "Ajoute une carte pour continuer ton abonnement."}
               </p>
             </div>
-            <button className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary-hover transition-colors btn-press">
+            <a
+              href="/upgrade"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary-hover transition-colors btn-press"
+            >
               <CreditCard className="w-4 h-4" />
               Ajouter une carte
-            </button>
+            </a>
           </div>
         )}
 

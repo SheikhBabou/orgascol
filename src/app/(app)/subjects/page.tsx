@@ -111,7 +111,7 @@ export default function SubjectsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1.5">
-              Une matière par ligne (tu peux en coller plusieurs d&apos;un coup)
+              Une matière par ligne
             </label>
             <textarea
               value={newNames}
