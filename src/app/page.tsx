@@ -12,6 +12,8 @@ import {
   BarChart3,
   CheckCircle2,
   Sparkles,
+  Check,
+  Crown,
 } from "lucide-react";
 
 export default function Home() {
@@ -87,7 +89,7 @@ export default function Home() {
           <div className="max-w-3xl space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-sm animate-hero-text">
               <Sparkles className="w-4 h-4" />
-              Planification intelligente pour étudiants
+              1 mois d&apos;essai gratuit — sans engagement
             </div>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
               <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
@@ -101,13 +103,14 @@ export default function Home() {
             <p className="text-lg md:text-xl text-white/60 max-w-xl leading-relaxed animate-hero-text" style={{ animationDelay: "0.3s" }}>
               Renseigne tes examens et ton emploi du temps. Orga&apos;Scol génère
               un planning de révision optimal basé sur la répétition espacée.
+              Essaie gratuitement pendant 1 mois.
             </p>
             <div className="flex flex-wrap gap-4 animate-hero-text" style={{ animationDelay: "0.45s" }}>
               <Link
                 href="/auth"
                 className="group inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 rounded-2xl font-semibold text-base btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.3)]"
               >
-                Créer mon compte
+                Essayer gratuitement
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <a
@@ -122,7 +125,7 @@ export default function Home() {
           {/* Stats row */}
           <div className="flex flex-wrap gap-8 mt-16 animate-hero-text" style={{ animationDelay: "0.6s" }}>
             {[
-              { value: "100%", label: "Gratuit" },
+              { value: "1 mois", label: "Essai gratuit" },
               { value: "4", label: "Méthodes de révision" },
               { value: "∞", label: "Examens & matières" },
             ].map(({ value, label }) => (
@@ -283,8 +286,107 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Pricing */}
       <section id="tarifs" className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16 stagger-children">
+            <span className="inline-block px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold uppercase tracking-wider mb-4">
+              Tarifs
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              Un prix simple,{" "}
+              <span className="text-primary">tout inclus</span>
+            </h2>
+            <p className="text-muted mt-4">
+              1 mois d&apos;essai gratuit. Le paiement commence le 1er du mois suivant ton inscription.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto stagger-children">
+            {/* Monthly */}
+            <div className="bg-card-bg border border-border rounded-2xl p-8 space-y-6 card-interactive">
+              <div>
+                <h3 className="text-lg font-semibold">Mensuel</h3>
+                <p className="text-sm text-muted mt-1">Flexible, résiliable à tout moment</p>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold">11,99€</span>
+                <span className="text-muted">/mois</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  "1 mois d'essai gratuit",
+                  "Toutes les fonctionnalités",
+                  "Planning de révision illimité",
+                  "Import emploi du temps iCal",
+                  "Notes & moyennes par UE",
+                  "Résiliable à tout moment",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5 text-sm">
+                    <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/auth"
+                className="group flex items-center justify-center gap-2 w-full py-3 border border-border rounded-xl font-semibold text-sm hover:bg-background transition-colors btn-press"
+              >
+                Commencer l&apos;essai gratuit
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            {/* Annual */}
+            <div className="relative bg-gradient-to-br from-primary to-purple-600 rounded-2xl p-8 space-y-6 text-white card-interactive overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold">
+                <Crown className="w-3.5 h-3.5" />
+                Économise 17%
+              </div>
+              <div className="relative">
+                <h3 className="text-lg font-semibold">Annuel</h3>
+                <p className="text-sm text-white/60 mt-1">Engagement 12 mois, meilleur prix</p>
+              </div>
+              <div className="relative flex items-baseline gap-1">
+                <span className="text-4xl font-bold">9,99€</span>
+                <span className="text-white/60">/mois</span>
+              </div>
+              <p className="text-xs text-white/40 -mt-3">Soit 119,88€/an facturé en une fois</p>
+              <ul className="relative space-y-3">
+                {[
+                  "1 mois d'essai gratuit",
+                  "Toutes les fonctionnalités",
+                  "Planning de révision illimité",
+                  "Import emploi du temps iCal",
+                  "Notes & moyennes par UE",
+                  "2 mois économisés vs mensuel",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5 text-sm">
+                    <Check className="w-4 h-4 text-white/80 shrink-0 mt-0.5" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/auth"
+                className="group relative flex items-center justify-center gap-2 w-full py-3 bg-white text-indigo-700 rounded-xl font-semibold text-sm btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.3)]"
+              >
+                Commencer l&apos;essai gratuit
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-muted mt-8">
+            Essai gratuit de 30 jours. Aucun paiement requis avant le 1er du mois suivant.
+            L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de la période.
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto text-center stagger-children">
           <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -293,14 +395,14 @@ export default function Home() {
                 Prêt à organiser tes révisions ?
               </h2>
               <p className="text-white/70 text-lg max-w-xl mx-auto">
-                Orga&apos;Scol est entièrement gratuit. Crée ton compte en 30
-                secondes et commence à planifier.
+                Essaie Orga&apos;Scol gratuitement pendant 1 mois.
+                Aucune carte bancaire demandée à l&apos;inscription.
               </p>
               <Link
                 href="/auth"
                 className="group inline-flex items-center gap-2 px-10 py-4 bg-white text-indigo-700 rounded-2xl font-bold text-lg btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.4)]"
               >
-                Commencer gratuitement
+                Commencer mon essai gratuit
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

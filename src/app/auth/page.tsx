@@ -72,8 +72,8 @@ export default function AuthPage() {
             <span style={{ color: "#c4b5fd" }}>sérénité assurée.</span>
           </h2>
           <p className="text-white/50 leading-relaxed">
-            Rejoins les étudiants qui planifient intelligemment et arrivent
-            confiants le jour de l&apos;examen.
+            Rejoins les étudiants qui planifient intelligemment. 1 mois
+            d&apos;essai gratuit, puis à partir de 9,99€/mois.
           </p>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function AuthPage() {
             <p className="text-sm text-muted">
               {isLogin
                 ? "Connecte-toi pour retrouver ton planning."
-                : "Inscris-toi gratuitement en 30 secondes."}
+                : "1 mois d'essai gratuit. Aucune carte bancaire requise."}
             </p>
           </div>
 
