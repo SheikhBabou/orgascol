@@ -172,7 +172,7 @@ export default function ConfidentialitePage() {
           Notre équipe est disponible pour répondre à toutes tes questions sur la protection de tes données.
         </p>
         <a
-          href="mailto:contact@orgascol.fr"
+          href="/contact"
           className="inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 rounded-xl font-semibold text-sm hover:shadow-lg transition-shadow"
         >
           <Mail className="w-4 h-4" />

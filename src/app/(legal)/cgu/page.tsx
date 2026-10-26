@@ -25,7 +25,7 @@ const sections = [
         </p>
         <p>
           Orga&apos;Scol est une plateforme de planification de révisions destinée aux
-          étudiants, éditée par Cheikh Babou, basé en France.
+          étudiants, éditée en France.
         </p>
         <p>
           En créant un compte, vous acceptez sans réserve les présentes CGU.
@@ -255,7 +255,7 @@ export default function CGUPage() {
           Notre équipe est disponible pour répondre à toutes vos questions.
         </p>
         <a
-          href="mailto:contact@orgascol.fr"
+          href="/contact"
           className="inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 rounded-xl font-semibold text-sm hover:shadow-lg transition-shadow"
         >
           <Mail className="w-4 h-4" />

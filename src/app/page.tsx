@@ -437,11 +437,17 @@ export default function Home() {
               </div>
             </div>
             <div className="space-y-3">
-              <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">Produit</h4>
+              <h4 className="font-semibold text-sm text-white/60 uppercase tracking-wider">Navigation</h4>
               <div className="space-y-2">
-                {["Fonctionnalités", "Méthode", "Tarifs"].map((item) => (
-                  <a key={item} href={`#${item.toLowerCase()}`} className="block text-sm text-white/40 hover:text-white transition-colors">
-                    {item}
+                {[
+                  { label: "Accueil", href: "#" },
+                  { label: "Comment ça marche", href: "#fonctionnalités" },
+                  { label: "Tarifs", href: "#tarifs" },
+                  { label: "FAQ", href: "/faq" },
+                  { label: "Contact", href: "/contact" },
+                ].map(({ label, href }) => (
+                  <a key={label} href={href} className="block text-sm text-white/40 hover:text-white transition-colors">
+                    {label}
                   </a>
                 ))}
               </div>
