@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthContent />
+    </Suspense>
+  );
+}
+
+function AuthContent() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +22,8 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = searchParams.get("plan");
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -73,8 +83,18 @@ export default function AuthPage() {
           </h2>
           <p className="text-white/50 leading-relaxed">
             Rejoins les étudiants qui planifient intelligemment. 1 mois
-            d&apos;essai gratuit, puis à partir de 9,99€/mois.
+            d&apos;essai gratuit, puis {plan === "mensuel" ? "11,99€/mois" : plan === "annuel" ? "9,99€/mois (annuel)" : "à partir de 9,99€/mois"}.
           </p>
+          {plan && (
+            <div className="mt-4 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 animate-fade-in">
+              <p className="text-sm font-semibold text-white">
+                Plan {plan === "annuel" ? "Annuel" : "Mensuel"} sélectionné
+              </p>
+              <p className="text-xs text-white/50 mt-1">
+                {plan === "annuel" ? "9,99€/mois · 119,88€/an · Engagement 12 mois" : "11,99€/mois · Résiliable à tout moment"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -95,7 +115,11 @@ export default function AuthPage() {
             <p className="text-sm text-muted">
               {isLogin
                 ? "Connecte-toi pour retrouver ton planning."
-                : "1 mois d'essai gratuit. Aucune carte bancaire requise."}
+                : plan === "mensuel"
+                  ? "1 mois gratuit, puis 11,99€/mois. Aucune carte bancaire requise."
+                  : plan === "annuel"
+                    ? "1 mois gratuit, puis 9,99€/mois. Aucune carte bancaire requise."
+                    : "1 mois d'essai gratuit. Aucune carte bancaire requise."}
             </p>
           </div>
 

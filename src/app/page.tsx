@@ -333,7 +333,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link
-                href="/auth"
+                href="/auth?plan=mensuel"
                 className="group flex items-center justify-center gap-2 w-full py-3 border border-border rounded-xl font-semibold text-sm hover:bg-background transition-colors btn-press"
               >
                 Commencer l&apos;essai gratuit
@@ -373,7 +373,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link
-                href="/auth"
+                href="/auth?plan=annuel"
                 className="group relative flex items-center justify-center gap-2 w-full py-3 bg-white text-indigo-700 rounded-xl font-semibold text-sm btn-magnetic hover:shadow-[0_8px_30px_-5px_rgba(255,255,255,0.3)]"
               >
                 Commencer l&apos;essai gratuit
