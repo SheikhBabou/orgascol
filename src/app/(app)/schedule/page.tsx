@@ -397,7 +397,7 @@ export default function SchedulePage() {
             </div>
             <div className="p-2 space-y-1.5 min-h-[100px]">
               {slotsByDay[dayIndex].length === 0 ? (
-                <p className="text-xs text-muted text-center py-4">—</p>
+                <p className="text-xs text-muted text-center py-4">-</p>
               ) : (
                 slotsByDay[dayIndex].map((slot) => (
                   <div

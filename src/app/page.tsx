@@ -158,7 +158,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-sm animate-hero-text hover:bg-white/20 transition-colors"
             >
               <GraduationCap className="w-4 h-4" />
-              1 mois d&apos;essai gratuit — sans engagement
+              1 mois d&apos;essai gratuit - sans engagement
             </Link>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
               <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
@@ -235,7 +235,7 @@ export default function Home() {
               {
                 icon: Brain,
                 title: "Méthodes scientifiques",
-                desc: "1re lecture, révision active, répétition espacée, relecture finale — des techniques prouvées.",
+                desc: "1re lecture, révision active, répétition espacée, relecture finale - des techniques prouvées.",
                 color: "from-purple-500 to-pink-500",
               },
               {
@@ -421,7 +421,7 @@ export default function Home() {
                 <span className="text-4xl font-bold">9,99€</span>
                 <span className="text-white/60">/mois</span>
               </div>
-              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire — paiement mensuel ou en une fois</p>
+              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire - paiement mensuel ou en une fois</p>
               <ul className="relative space-y-3">
                 {[
                   "1 mois d'essai gratuit",

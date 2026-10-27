@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         {
           price_data: {
             currency: "eur",
-            product_data: { name: "Orga'Scol — Annuel (année scolaire)" },
+            product_data: { name: "Orga'Scol - Annuel (année scolaire)" },
             unit_amount: 9990,
           },
           quantity: 1,
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         price_data: {
           currency: "eur",
           product_data: {
-            name: `Orga'Scol — ${planData.name}`,
+            name: `Orga'Scol - ${planData.name}`,
           },
           unit_amount: planData.price,
           recurring: {

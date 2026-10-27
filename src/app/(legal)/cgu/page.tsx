@@ -69,7 +69,7 @@ const sections = [
           <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
             <p className="font-semibold text-sm text-primary">Annuel (année scolaire)</p>
             <p className="text-2xl font-bold mt-1">9,99€<span className="text-sm font-normal text-muted">/mois</span></p>
-            <p className="text-xs text-muted mt-1">99,90€ sur 10 mois — paiement mensuel ou en une fois</p>
+            <p className="text-xs text-muted mt-1">99,90€ sur 10 mois - paiement mensuel ou en une fois</p>
           </div>
         </div>
         <ul>

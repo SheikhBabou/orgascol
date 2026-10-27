@@ -22,8 +22,8 @@ const sections = [
           <li>Adresse email</li>
           <li>Mot de passe (chiffré, jamais stocké en clair)</li>
           <li>Plan choisi (mensuel ou annuel)</li>
-          <li>Niveau d&apos;études — optionnel (Licence, Master, BTS, Prépa, DUT/BUT, Doctorat, Lycée, etc.)</li>
-          <li>Filière / intitulé de formation — optionnel (ex : Droit, Informatique, Commerce, etc.)</li>
+          <li>Niveau d&apos;études - optionnel (Licence, Master, BTS, Prépa, DUT/BUT, Doctorat, Lycée, etc.)</li>
+          <li>Filière / intitulé de formation - optionnel (ex : Droit, Informatique, Commerce, etc.)</li>
         </ul>
         <p className="font-medium text-foreground pt-2">Lors de l&apos;utilisation</p>
         <ul>

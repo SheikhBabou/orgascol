@@ -184,7 +184,7 @@ export default function SubscriptionPage() {
 
         {sub.plan === "annuel" && (
           <p className="text-xs text-muted">
-            99,90€ l&apos;année scolaire (10 mois) — paiement mensuel ou en une fois
+            99,90€ l&apos;année scolaire (10 mois) - paiement mensuel ou en une fois
           </p>
         )}
 
@@ -314,7 +314,7 @@ export default function SubscriptionPage() {
             <div className="flex items-center justify-between p-4 rounded-xl bg-background border border-border">
               <div>
                 <p className="text-sm font-medium">Passer au plan Annuel</p>
-                <p className="text-xs text-muted">Économise 17% — 9,99€/mois au lieu de 11,99€</p>
+                <p className="text-xs text-muted">Économise 17% - 9,99€/mois au lieu de 11,99€</p>
               </div>
               <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors btn-press">
                 Changer

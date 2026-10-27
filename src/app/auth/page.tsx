@@ -17,11 +17,11 @@ export default function AuthPage() {
 type View = "login" | "signup" | "forgot";
 
 const AVIS = [
-  { name: "Sarah M.", role: "L3 Droit — Paris", text: "J'ai validé mon semestre sans stress. Le planning automatique m'a fait gagner un temps fou !" },
-  { name: "Amine K.", role: "Prépa MPSI — Lyon", text: "Les rappels au bon moment, c'est exactement ce qu'il me fallait. Mes notes ont grimpé de 3 points." },
-  { name: "Chloé D.", role: "M1 Psychologie — Bordeaux", text: "Je recommande à 100%. L'organisation de mes révisions n'a jamais été aussi simple." },
-  { name: "Youssef B.", role: "BTS Commerce — Marseille", text: "En 2 semaines, j'ai rattrapé tout mon retard. L'algorithme sait quand réviser chaque matière." },
-  { name: "Léa T.", role: "PASS Médecine — Lille", text: "Indispensable pour la PASS. Le planning s'adapte quand je prends du retard, c'est génial." },
+  { name: "Sarah M.", role: "L3 Droit - Paris", text: "J'ai validé mon semestre sans stress. Le planning automatique m'a fait gagner un temps fou !" },
+  { name: "Amine K.", role: "Prépa MPSI - Lyon", text: "Les rappels au bon moment, c'est exactement ce qu'il me fallait. Mes notes ont grimpé de 3 points." },
+  { name: "Chloé D.", role: "M1 Psychologie - Bordeaux", text: "Je recommande à 100%. L'organisation de mes révisions n'a jamais été aussi simple." },
+  { name: "Youssef B.", role: "BTS Commerce - Marseille", text: "En 2 semaines, j'ai rattrapé tout mon retard. L'algorithme sait quand réviser chaque matière." },
+  { name: "Léa T.", role: "PASS Médecine - Lille", text: "Indispensable pour la PASS. Le planning s'adapte quand je prends du retard, c'est génial." },
 ];
 
 const FORMATIONS = [

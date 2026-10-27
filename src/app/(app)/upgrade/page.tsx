@@ -199,7 +199,7 @@ export default function UpgradePage() {
               }`}
             >
               <p className="text-sm font-semibold">En une fois</p>
-              <p className="text-xs text-muted mt-1">99,90€ — un seul paiement</p>
+              <p className="text-xs text-muted mt-1">99,90€ - un seul paiement</p>
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function UpgradePage() {
             ? "Redirection vers Stripe..."
             : selectedPlan === "annuel" && annualPayment === "once"
               ? "Payer 99,90€"
-              : `S'abonner — ${selectedPlan === "annuel" ? "9,99" : "11,99"}€/mois`}
+              : `S'abonner - ${selectedPlan === "annuel" ? "9,99" : "11,99"}€/mois`}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 

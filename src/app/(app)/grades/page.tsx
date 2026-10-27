@@ -145,7 +145,7 @@ export default function GradesPage() {
         <p className={`text-4xl font-bold mt-1 ${
           overallAvg !== null && overallAvg >= 10 ? "text-success" : overallAvg !== null ? "text-danger" : "text-muted"
         }`}>
-          {overallAvg !== null ? overallAvg.toFixed(2) : "—"} <span className="text-lg text-muted font-normal">/20</span>
+          {overallAvg !== null ? overallAvg.toFixed(2) : "-"} <span className="text-lg text-muted font-normal">/20</span>
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export default function GradesPage() {
                 <option value="">Choisir une matière</option>
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.ue_name ? `${s.ue_name} — ` : ""}{s.name}
+                    {s.ue_name ? `${s.ue_name} - ` : ""}{s.name}
                   </option>
                 ))}
               </select>
@@ -256,7 +256,7 @@ export default function GradesPage() {
               <span className={`text-sm font-bold ${
                 ueAvg !== null && ueAvg >= 10 ? "text-success" : ueAvg !== null ? "text-danger" : "text-muted"
               }`}>
-                {ueAvg !== null ? ueAvg.toFixed(2) : "—"}/20
+                {ueAvg !== null ? ueAvg.toFixed(2) : "-"}/20
               </span>
             </div>
             <div className="divide-y divide-border">
@@ -276,7 +276,7 @@ export default function GradesPage() {
                       <span className={`text-sm font-bold ${
                         avg !== null && avg >= 10 ? "text-success" : avg !== null ? "text-danger" : "text-muted"
                       }`}>
-                        {avg !== null ? avg.toFixed(2) : "—"}/20
+                        {avg !== null ? avg.toFixed(2) : "-"}/20
                       </span>
                     </div>
                     {subjectGrades.length > 0 && (
@@ -327,7 +327,7 @@ export default function GradesPage() {
                     <span className={`text-sm font-bold ${
                       avg !== null && avg >= 10 ? "text-success" : avg !== null ? "text-danger" : "text-muted"
                     }`}>
-                      {avg !== null ? avg.toFixed(2) : "—"}/20
+                      {avg !== null ? avg.toFixed(2) : "-"}/20
                     </span>
                   </div>
                   {subjectGrades.length > 0 && (
