@@ -61,12 +61,7 @@ function AuthContent() {
       });
       if (error) {
         if (error.message === "Invalid login credentials") {
-          const { data } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-          if (!data.user && !data.session) {
-            setError("Aucun compte trouvé avec cet email. Inscris-toi pour commencer !");
-          } else {
-            setError("Mot de passe incorrect. Vérifie ton mot de passe ou réinitialise-le.");
-          }
+          setError("Email ou mot de passe incorrect. Vérifie tes identifiants ou réinitialise ton mot de passe.");
         } else {
           setError(error.message);
         }
@@ -117,17 +112,13 @@ function AuthContent() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — gradient */}
-      <div className="hidden lg:flex lg:w-1/2 hero-gradient relative overflow-hidden items-end p-12">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-40 left-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "1.5s" }} />
+      {/* Left panel — photo */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-end p-12">
         <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&q=80')" }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-primary/30" />
         <div className="relative space-y-6 max-w-md animate-hero-text">
           <Link href="/" className="flex items-center gap-2">
             <GraduationCap className="w-10 h-10 text-white" />
@@ -137,16 +128,22 @@ function AuthContent() {
             Organise tes révisions,<br />
             <span style={{ color: "#c4b5fd" }}>sérénité assurée.</span>
           </h2>
-          <p className="text-white/50 leading-relaxed">
-            Rejoins les étudiants qui planifient intelligemment. 1 mois
-            d&apos;essai gratuit, puis {plan === "annuel" ? "9,99€/mois (annuel)" : "11,99€/mois"}.
+          <p className="text-white/70 leading-relaxed">
+            Rejoins des milliers d&apos;étudiants qui ont transformé leur façon
+            de réviser. Planifie intelligemment, retiens durablement.
           </p>
-          <div className="mt-4 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 animate-fade-in">
-            <p className="text-sm font-semibold text-white">
-              Plan {plan === "annuel" ? "Annuel" : "Mensuel"} sélectionné
-            </p>
-            <p className="text-xs text-white/50 mt-1">
-              {plan === "annuel" ? "9,99€/mois · 99,90€/année scolaire · Engagement 10 mois · Paiement mensuel ou en une fois" : "11,99€/mois · Résiliable à tout moment"}
+          <div className="flex items-center gap-4 pt-2">
+            <div className="flex -space-x-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full border-2 border-white/20"
+                  style={{ backgroundColor: ["#7c3aed", "#6d28d9", "#8b5cf6", "#a78bfa"][i] }}
+                />
+              ))}
+            </div>
+            <p className="text-sm text-white/60">
+              <span className="text-white font-semibold">+2 000</span> étudiants nous font confiance
             </p>
           </div>
         </div>
@@ -155,18 +152,11 @@ function AuthContent() {
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm space-y-8 animate-fade-in">
-          <div className="lg:hidden space-y-3 mb-4">
+          <div className="lg:hidden mb-4">
             <Link href="/" className="flex items-center gap-2">
               <GraduationCap className="w-8 h-8 text-primary" />
               <span className="text-xl font-bold">Orga&apos;Scol</span>
             </Link>
-            {view !== "forgot" && (
-              <div className="px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-xs font-semibold text-primary">
-                  Plan {plan === "annuel" ? "Annuel" : "Mensuel"} — {plan === "annuel" ? "9,99€/mois" : "11,99€/mois"}
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
