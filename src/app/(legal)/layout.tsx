@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GraduationCap, X } from "lucide-react";
 import Footer from "@/components/footer";
+import LegalNav from "@/components/legal-nav";
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,25 +17,8 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             </span>
           </Link>
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-8">
-            {[
-              { label: "Accueil", href: "/" },
-              { label: "Fonctionnalités", href: "/#fonctionnalités" },
-              { label: "Méthode", href: "/#méthode" },
-              { label: "Tarifs", href: "/#tarifs" },
-              { label: "FAQ", href: "/faq" },
-              { label: "Contact", href: "/contact" },
-            ].map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className="nav-link text-sm font-medium text-muted hover:text-foreground transition-colors"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
+          {/* Nav links — client component for active state */}
+          <LegalNav />
 
           {/* Actions */}
           <div className="flex items-center gap-3 shrink-0">

@@ -19,6 +19,7 @@ import Footer from "@/components/footer";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [activeNav, setActiveNav] = useState<string>("#");
 
   useEffect(() => {
     function onScroll() {
@@ -62,7 +63,10 @@ export default function Home() {
               <a
                 key={label}
                 href={href}
+                onClick={() => setActiveNav(href)}
                 className={`nav-link text-sm font-medium transition-colors duration-300 ${
+                  activeNav === href ? "active" : ""
+                } ${
                   scrolled ? "text-muted hover:text-foreground" : "text-white/70 hover:text-white"
                 }`}
               >
