@@ -153,10 +153,13 @@ export default function Home() {
 
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 pb-24 pt-40 md:pb-32">
           <div className="max-w-3xl space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-sm animate-hero-text">
-              <Sparkles className="w-4 h-4" />
+            <Link
+              href="/auth?plan=mensuel"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-sm animate-hero-text hover:bg-white/20 transition-colors"
+            >
+              <GraduationCap className="w-4 h-4" />
               1 mois d&apos;essai gratuit — sans engagement
-            </div>
+            </Link>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
               <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
                 Planifie tes révisions,
