@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { User, Lock, Save, Loader2, Sun, Moon, Monitor } from "lucide-react";
+import { User, Lock, Save, Loader2, Sun, Moon, Monitor, Trash2, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,11 @@ export default function SettingsPage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     loadUser();
@@ -55,6 +61,21 @@ export default function SettingsPage() {
       setConfirmPassword("");
     }
     setPasswordSaving(false);
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText !== "SUPPRIMER") return;
+    setDeleting(true);
+    setDeleteError(null);
+
+    const res = await fetch("/api/delete-account", { method: "DELETE" });
+    if (res.ok) {
+      await supabase.auth.signOut();
+      router.push("/");
+    } else {
+      setDeleteError("Une erreur est survenue. Réessaie ou contacte-nous.");
+      setDeleting(false);
+    }
   }
 
   function changeTheme(newTheme: "system" | "light" | "dark") {
@@ -181,6 +202,71 @@ export default function SettingsPage() {
           {passwordSaving ? "Enregistrement..." : "Mettre à jour"}
         </button>
       </form>
+
+      {/* Zone danger - Suppression */}
+      <div className="bg-card-bg border border-danger/30 rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-danger/10">
+            <Trash2 className="w-5 h-5 text-danger" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-danger">Supprimer le compte</h2>
+            <p className="text-xs text-muted">Cette action est irréversible</p>
+          </div>
+        </div>
+
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 border border-danger/30 text-danger rounded-lg text-sm font-medium hover:bg-danger/5 transition-colors"
+          >
+            Supprimer mon compte
+          </button>
+        ) : (
+          <div className="space-y-3 p-4 rounded-lg bg-danger/5 border border-danger/20">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
+              <div className="text-sm text-danger space-y-1">
+                <p className="font-semibold">Attention, cette action est définitive !</p>
+                <p className="text-muted text-xs">
+                  Toutes tes données seront supprimées : matières, notes, examens, projets, planning et sessions de révision. Cette action ne peut pas être annulée.
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5">
+                Tape <span className="font-bold text-danger">SUPPRIMER</span> pour confirmer
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-danger/30 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-danger/50"
+                placeholder="SUPPRIMER"
+              />
+            </div>
+            {deleteError && (
+              <p className="text-sm text-danger">{deleteError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== "SUPPRIMER" || deleting}
+                className="flex items-center gap-2 px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {deleting ? "Suppression..." : "Confirmer la suppression"}
+              </button>
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); setDeleteError(null); }}
+                className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
