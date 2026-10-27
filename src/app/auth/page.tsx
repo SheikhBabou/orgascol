@@ -207,12 +207,14 @@ function AuthContent() {
                 <span className="text-white font-semibold">+2 000</span> étudiants
               </p>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               {AVIS.map((_, i) => (
-                <div
+                <button
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-                    i === avisIndex ? "bg-white" : "bg-white/30"
+                  type="button"
+                  onClick={() => setAvisIndex(i)}
+                  className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${
+                    i === avisIndex ? "bg-white scale-125" : "bg-white/30 hover:bg-white/60"
                   }`}
                 />
               ))}

@@ -18,9 +18,12 @@ const sections = [
       <>
         <p className="font-medium text-foreground">Lors de l&apos;inscription</p>
         <ul>
+          <li>Prénom et nom</li>
           <li>Adresse email</li>
           <li>Mot de passe (chiffré, jamais stocké en clair)</li>
           <li>Plan choisi (mensuel ou annuel)</li>
+          <li>Niveau d&apos;études — optionnel (Licence, Master, BTS, Prépa, DUT/BUT, Doctorat, Lycée, etc.)</li>
+          <li>Filière / intitulé de formation — optionnel (ex : Droit, Informatique, Commerce, etc.)</li>
         </ul>
         <p className="font-medium text-foreground pt-2">Lors de l&apos;utilisation</p>
         <ul>
@@ -47,6 +50,7 @@ const sections = [
         <p>Tes données sont utilisées uniquement pour :</p>
         <ul>
           <li><strong>Fonctionnement du service :</strong> Générer ton planning de révision, calculer tes moyennes, suivre ta progression.</li>
+          <li><strong>Personnalisation :</strong> Adapter le contenu et les recommandations à ton niveau d&apos;études et ta filière.</li>
           <li><strong>Gestion de compte :</strong> Authentification, gestion de l&apos;abonnement et du paiement.</li>
           <li><strong>Alertes :</strong> T&apos;envoyer des notifications importantes (examens proches, échéances projets).</li>
           <li><strong>Amélioration :</strong> Analyser l&apos;utilisation du service pour l&apos;améliorer (statistiques anonymisées).</li>

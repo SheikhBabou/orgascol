@@ -35,7 +35,7 @@ const sections = [
     icon: Server,
     title: "Hébergement",
     content: (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <div className="p-4 rounded-xl bg-background border border-border">
           <p className="font-semibold text-sm text-foreground">Vercel Inc.</p>
           <p className="text-xs text-muted mt-1">Hébergement de l&apos;application</p>
@@ -47,6 +47,12 @@ const sections = [
           <p className="text-xs text-muted mt-1">Base de données &amp; authentification</p>
           <p className="text-xs text-muted">970 Toa Payoh North #07-04, Singapore</p>
           <a href="https://supabase.com" className="text-xs text-primary font-medium hover:underline mt-1 inline-block">supabase.com</a>
+        </div>
+        <div className="p-4 rounded-xl bg-background border border-border">
+          <p className="font-semibold text-sm text-foreground">Stripe Inc.</p>
+          <p className="text-xs text-muted mt-1">Traitement sécurisé des paiements</p>
+          <p className="text-xs text-muted">354 Oyster Point Blvd, South San Francisco, CA 94080, USA</p>
+          <a href="https://stripe.com" className="text-xs text-primary font-medium hover:underline mt-1 inline-block">stripe.com</a>
         </div>
       </div>
     ),

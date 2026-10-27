@@ -29,6 +29,8 @@ const sections = [
         </p>
         <p>
           En créant un compte, vous acceptez sans réserve les présentes CGU.
+          L&apos;inscription requiert un prénom, un nom, une adresse email et un mot de passe.
+          Le niveau d&apos;études et la filière sont facultatifs et servent à personnaliser le service.
         </p>
       </>
     ),
