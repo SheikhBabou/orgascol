@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { GraduationCap, ArrowRight, Loader2, Mail, Star } from "lucide-react";
@@ -16,18 +16,43 @@ export default function AuthPage() {
 
 type View = "login" | "signup" | "forgot";
 
+const AVIS = [
+  { name: "Sarah M.", role: "L3 Droit — Paris", text: "J'ai validé mon semestre sans stress. Le planning automatique m'a fait gagner un temps fou !" },
+  { name: "Amine K.", role: "Prépa MPSI — Lyon", text: "Les rappels au bon moment, c'est exactement ce qu'il me fallait. Mes notes ont grimpé de 3 points." },
+  { name: "Chloé D.", role: "M1 Psychologie — Bordeaux", text: "Je recommande à 100%. L'organisation de mes révisions n'a jamais été aussi simple." },
+  { name: "Youssef B.", role: "BTS Commerce — Marseille", text: "En 2 semaines, j'ai rattrapé tout mon retard. L'algorithme sait quand réviser chaque matière." },
+  { name: "Léa T.", role: "PASS Médecine — Lille", text: "Indispensable pour la PASS. Le planning s'adapte quand je prends du retard, c'est génial." },
+];
+
+const FORMATIONS = [
+  "Licence 1", "Licence 2", "Licence 3",
+  "Master 1", "Master 2",
+  "BTS", "DUT / BUT", "Prépa",
+  "Doctorat", "Lycée", "Autre",
+];
+
 function AuthContent() {
   const [view, setView] = useState<View>("login");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [formation, setFormation] = useState("");
+  const [formationName, setFormationName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [avisIndex, setAvisIndex] = useState(0);
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan");
   const supabase = createClient();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAvisIndex((prev) => (prev + 1) % AVIS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   function switchView(v: View) {
     setView(v);
@@ -77,6 +102,8 @@ function AuthContent() {
             first_name: firstName,
             last_name: lastName,
             plan: plan === "annuel" ? "annuel" : "mensuel",
+            ...(formation && { formation }),
+            ...(formationName && { formation_name: formationName }),
           },
         },
       });
@@ -132,58 +159,64 @@ function AuthContent() {
           </h2>
         </div>
 
-        {/* Bottom — avis */}
-        <div className="relative space-y-4 animate-fade-in">
-          {[
-            {
-              name: "Sarah M.",
-              role: "L3 Droit — Paris",
-              text: "Grâce à Orga'Scol, j'ai validé mon semestre sans stress. Le planning automatique m'a fait gagner un temps fou !",
-              stars: 5,
-            },
-            {
-              name: "Amine K.",
-              role: "Prépa MPSI — Lyon",
-              text: "Les rappels de révision au bon moment, c'est exactement ce qu'il me fallait. Mes notes ont grimpé de 3 points.",
-              stars: 5,
-            },
-          ].map((avis) => (
+        {/* Bottom — avis carousel */}
+        <div className="relative space-y-3">
+          <div className="overflow-hidden rounded-xl" style={{ height: "100px" }}>
             <div
-              key={avis.name}
-              className="px-5 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10"
+              className="transition-transform duration-700 ease-in-out"
+              style={{ transform: `translateY(-${avisIndex * 100}px)` }}
             >
-              <div className="flex items-center gap-1 mb-2">
-                {[...Array(avis.stars)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              {AVIS.map((avis) => (
+                <div
+                  key={avis.name}
+                  className="px-4 py-3 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl"
+                  style={{ height: "100px" }}
+                >
+                  <div className="flex items-center gap-1 mb-1.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-xs text-white/80 leading-relaxed mb-2">
+                    &ldquo;{avis.text}&rdquo;
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/60 flex items-center justify-center text-[10px] font-bold text-white">
+                      {avis.name.charAt(0)}
+                    </div>
+                    <p className="text-xs text-white/70">
+                      <span className="font-semibold text-white">{avis.name}</span> · {avis.role}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-1.5">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-6 rounded-full border-2 border-white/20"
+                    style={{ backgroundColor: ["#7c3aed", "#6d28d9", "#8b5cf6", "#a78bfa"][i] }}
+                  />
                 ))}
               </div>
-              <p className="text-sm text-white/80 leading-relaxed mb-3">
-                &ldquo;{avis.text}&rdquo;
+              <p className="text-xs text-white/60">
+                <span className="text-white font-semibold">+2 000</span> étudiants
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/60 flex items-center justify-center text-xs font-bold text-white">
-                  {avis.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{avis.name}</p>
-                  <p className="text-xs text-white/50">{avis.role}</p>
-                </div>
-              </div>
             </div>
-          ))}
-          <div className="flex items-center gap-4 pt-1">
-            <div className="flex -space-x-2">
-              {[0, 1, 2, 3].map((i) => (
+            <div className="flex gap-1">
+              {AVIS.map((_, i) => (
                 <div
                   key={i}
-                  className="w-7 h-7 rounded-full border-2 border-white/20"
-                  style={{ backgroundColor: ["#7c3aed", "#6d28d9", "#8b5cf6", "#a78bfa"][i] }}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                    i === avisIndex ? "bg-white" : "bg-white/30"
+                  }`}
                 />
               ))}
             </div>
-            <p className="text-sm text-white/60">
-              <span className="text-white font-semibold">+2 000</span> étudiants nous font confiance
-            </p>
           </div>
         </div>
       </div>
@@ -206,36 +239,69 @@ function AuthContent() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name fields — signup only */}
             {view === "signup" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium mb-1.5">
-                    Prénom
-                  </label>
-                  <input
-                    id="firstName"
-                    type="text"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    placeholder="Prénom"
-                  />
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium mb-1.5">
+                      Prénom
+                    </label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                      placeholder="Prénom"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium mb-1.5">
+                      Nom
+                    </label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                      placeholder="Nom"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium mb-1.5">
-                    Nom
-                  </label>
-                  <input
-                    id="lastName"
-                    type="text"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    placeholder="Nom"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="formation" className="block text-sm font-medium mb-1.5">
+                      Niveau <span className="text-muted font-normal">(optionnel)</span>
+                    </label>
+                    <select
+                      id="formation"
+                      value={formation}
+                      onChange={(e) => setFormation(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    >
+                      <option value="">Sélectionner</option>
+                      {FORMATIONS.map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="formationName" className="block text-sm font-medium mb-1.5">
+                      Filière <span className="text-muted font-normal">(optionnel)</span>
+                    </label>
+                    <input
+                      id="formationName"
+                      type="text"
+                      value={formationName}
+                      onChange={(e) => setFormationName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-card-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                      placeholder="Ex: Droit, Info..."
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             <div>
