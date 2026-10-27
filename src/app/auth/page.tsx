@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, ArrowRight, Loader2, Mail } from "lucide-react";
+import { GraduationCap, ArrowRight, Loader2, Mail, Star } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthPage() {
@@ -112,14 +112,16 @@ function AuthContent() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — photo */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-end p-12">
+      {/* Left panel — photo + avis */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&q=80')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-primary/30" />
-        <div className="relative space-y-6 max-w-md animate-hero-text">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-primary/30" />
+
+        {/* Top — logo + titre */}
+        <div className="relative space-y-4 animate-hero-text">
           <Link href="/" className="flex items-center gap-2">
             <GraduationCap className="w-10 h-10 text-white" />
             <span className="text-2xl font-bold text-white">Orga&apos;Scol</span>
@@ -128,16 +130,53 @@ function AuthContent() {
             Organise tes révisions,<br />
             <span style={{ color: "#c4b5fd" }}>sérénité assurée.</span>
           </h2>
-          <p className="text-white/70 leading-relaxed">
-            Rejoins des milliers d&apos;étudiants qui ont transformé leur façon
-            de réviser. Planifie intelligemment, retiens durablement.
-          </p>
-          <div className="flex items-center gap-4 pt-2">
+        </div>
+
+        {/* Bottom — avis */}
+        <div className="relative space-y-4 animate-fade-in">
+          {[
+            {
+              name: "Sarah M.",
+              role: "L3 Droit — Paris",
+              text: "Grâce à Orga'Scol, j'ai validé mon semestre sans stress. Le planning automatique m'a fait gagner un temps fou !",
+              stars: 5,
+            },
+            {
+              name: "Amine K.",
+              role: "Prépa MPSI — Lyon",
+              text: "Les rappels de révision au bon moment, c'est exactement ce qu'il me fallait. Mes notes ont grimpé de 3 points.",
+              stars: 5,
+            },
+          ].map((avis) => (
+            <div
+              key={avis.name}
+              className="px-5 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10"
+            >
+              <div className="flex items-center gap-1 mb-2">
+                {[...Array(avis.stars)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-sm text-white/80 leading-relaxed mb-3">
+                &ldquo;{avis.text}&rdquo;
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/60 flex items-center justify-center text-xs font-bold text-white">
+                  {avis.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{avis.name}</p>
+                  <p className="text-xs text-white/50">{avis.role}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-4 pt-1">
             <div className="flex -space-x-2">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="w-8 h-8 rounded-full border-2 border-white/20"
+                  className="w-7 h-7 rounded-full border-2 border-white/20"
                   style={{ backgroundColor: ["#7c3aed", "#6d28d9", "#8b5cf6", "#a78bfa"][i] }}
                 />
               ))}
