@@ -14,12 +14,15 @@ import {
   Sparkles,
   Check,
   Crown,
+  Menu,
+  X,
 } from "lucide-react";
 import Footer from "@/components/footer";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeNav, setActiveNav] = useState<string>("#");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     function onScroll() {
@@ -74,17 +77,62 @@ export default function Home() {
               </a>
             ))}
           </nav>
-          <Link
-            href="/auth?plan=mensuel"
-            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-magnetic ${
-              scrolled
-                ? "bg-primary text-white"
-                : "bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25"
-            }`}
-          >
-            Commencer
-          </Link>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              href="/auth?plan=mensuel"
+              className={`hidden sm:inline-flex shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 btn-magnetic ${
+                scrolled
+                  ? "bg-primary text-white"
+                  : "bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25"
+              }`}
+            >
+              Commencer
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`md:hidden w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                scrolled ? "text-foreground hover:bg-background" : "text-white hover:bg-white/15"
+              }`}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className={`md:hidden border-t px-6 py-4 space-y-1 font-[family-name:var(--font-playfair)] ${
+            scrolled
+              ? "bg-card-bg/95 backdrop-blur-xl border-border"
+              : "bg-foreground/95 backdrop-blur-xl border-white/10"
+          }`}>
+            {[
+              { label: "Accueil", href: "#" },
+              { label: "Fonctionnalités", href: "#fonctionnalités" },
+              { label: "Méthode", href: "#méthode" },
+              { label: "Tarifs", href: "#tarifs" },
+              { label: "FAQ", href: "/faq" },
+              { label: "Contact", href: "/contact" },
+            ].map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                onClick={() => { setActiveNav(href); setMobileMenuOpen(false); }}
+                className={`block py-2.5 text-sm font-medium transition-colors ${
+                  activeNav === href ? "text-primary" : scrolled ? "text-muted" : "text-white/70"
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+            <Link
+              href="/auth?plan=mensuel"
+              className="block w-full text-center py-3 mt-2 bg-primary text-white rounded-full text-sm font-semibold"
+            >
+              Commencer
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
