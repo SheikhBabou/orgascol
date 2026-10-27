@@ -178,7 +178,7 @@ function AuthContent() {
                     ))}
                   </div>
                   <p className="text-xs text-white/80 leading-relaxed mb-2">
-                    &ldquo;{avis.text}&rdquo;
+                    {avis.text}
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-primary/60 flex items-center justify-center text-[10px] font-bold text-white">
