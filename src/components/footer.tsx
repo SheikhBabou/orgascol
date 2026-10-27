@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { GraduationCap } from "lucide-react";
 
 const NAV_LINKS = [
-  { label: "Accueil", href: "/#" },
   { label: "Comment ça marche", href: "/#fonctionnalités" },
   { label: "Tarifs", href: "/#tarifs" },
   { label: "FAQ", href: "/faq" },
