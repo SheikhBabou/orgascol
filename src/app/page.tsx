@@ -158,7 +158,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-sm animate-hero-text hover:bg-white/20 transition-colors"
             >
               <GraduationCap className="w-4 h-4" />
-              1 mois d&apos;essai gratuit - sans engagement
+              15 jours d&apos;essai gratuit - sans engagement
             </Link>
             <h1 className="animate-hero-text" style={{ animationDelay: "0.15s" }}>
               <span className="block text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1]">
@@ -172,7 +172,7 @@ export default function Home() {
             <p className="text-lg md:text-xl text-white/60 max-w-xl leading-relaxed animate-hero-text" style={{ animationDelay: "0.3s" }}>
               Renseigne tes examens et ton emploi du temps. Orga&apos;Scol génère
               un planning de révision optimal basé sur la répétition espacée.
-              Essaie gratuitement pendant 1 mois.
+              Essaie gratuitement pendant 15 jours.
             </p>
             <div className="flex flex-wrap gap-4 animate-hero-text" style={{ animationDelay: "0.45s" }}>
               <Link
@@ -194,7 +194,7 @@ export default function Home() {
           {/* Stats row */}
           <div className="flex flex-wrap gap-8 mt-16 animate-hero-text" style={{ animationDelay: "0.6s" }}>
             {[
-              { value: "1 mois", label: "Essai gratuit" },
+              { value: "15 jours", label: "Essai gratuit" },
               { value: "4", label: "Méthodes de révision" },
               { value: "∞", label: "Examens & matières" },
             ].map(({ value, label }) => (
@@ -367,7 +367,7 @@ export default function Home() {
               <span className="text-primary">tout inclus</span>
             </h2>
             <p className="text-muted mt-4">
-              1 mois d&apos;essai gratuit. Le paiement commence 30 jours apr&egrave;s ton inscription.
+              15 jours d&apos;essai gratuit. Le paiement commence après la période d&apos;essai.
             </p>
           </div>
 
@@ -384,7 +384,7 @@ export default function Home() {
               </div>
               <ul className="space-y-3">
                 {[
-                  "1 mois d'essai gratuit",
+                  "15 jours d'essai gratuit",
                   "Toutes les fonctionnalités",
                   "Planning de révision illimité",
                   "Import emploi du temps iCal",
@@ -424,7 +424,7 @@ export default function Home() {
               <p className="text-xs text-white/40 -mt-3">Soit 4,17€/mois - économise 30% vs mensuel</p>
               <ul className="relative space-y-3">
                 {[
-                  "1 mois d'essai gratuit",
+                  "15 jours d'essai gratuit",
                   "Toutes les fonctionnalités",
                   "Planning de révision illimité",
                   "Import emploi du temps iCal",
@@ -448,7 +448,7 @@ export default function Home() {
           </div>
 
           <p className="text-center text-xs text-muted mt-8">
-            Essai gratuit de 30 jours. Aucun paiement requis pendant la p&eacute;riode d&apos;essai.
+            Essai gratuit de 15 jours. Aucun paiement requis pendant la p&eacute;riode d&apos;essai.
             L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de la période.
           </p>
         </div>
@@ -464,7 +464,7 @@ export default function Home() {
                 Prêt à organiser tes révisions ?
               </h2>
               <p className="text-white/70 text-lg max-w-xl mx-auto">
-                Essaie Orga&apos;Scol gratuitement pendant 1 mois.
+                Essaie Orga&apos;Scol gratuitement pendant 15 jours.
                 Aucune carte bancaire demandée à l&apos;inscription.
               </p>
               <Link

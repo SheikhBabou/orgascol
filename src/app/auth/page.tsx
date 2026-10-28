@@ -132,8 +132,8 @@ function AuthContent() {
   const subtitles = {
     login: "Connecte-toi pour retrouver ton planning.",
     signup: plan === "annuel"
-      ? "1 mois gratuit, puis 49,99€/an. Aucune carte bancaire requise."
-      : "1 mois gratuit, puis 5,99€/mois. Aucune carte bancaire requise.",
+      ? "15 jours gratuits, puis 49,99€/an. Aucune carte bancaire requise."
+      : "15 jours gratuits, puis 5,99€/mois. Aucune carte bancaire requise.",
     forgot: "Entre ton email et on t'envoie un lien de réinitialisation.",
   };
 

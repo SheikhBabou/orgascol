@@ -75,7 +75,7 @@ export default function SubscriptionPage() {
     const createdAt = user.created_at;
     const startDate = new Date(createdAt);
     const trialEnd = new Date(startDate);
-    trialEnd.setMonth(trialEnd.getMonth() + 1);
+    trialEnd.setDate(trialEnd.getDate() + 15);
 
     const now = new Date();
     const isInTrial = now < trialEnd;

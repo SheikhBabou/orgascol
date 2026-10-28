@@ -16,7 +16,7 @@ export default function TrialGuard() {
 
       const createdAt = new Date(user.created_at);
       const trialEnd = new Date(createdAt);
-      trialEnd.setMonth(trialEnd.getMonth() + 1);
+      trialEnd.setDate(trialEnd.getDate() + 15);
 
       const now = new Date();
       if (now >= trialEnd && status !== "active") {

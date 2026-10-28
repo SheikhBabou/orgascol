@@ -73,8 +73,8 @@ const sections = [
           </div>
         </div>
         <ul>
-          <li><strong>Période d&apos;essai :</strong> 1 mois gratuit à compter de l&apos;inscription. Aucune carte bancaire requise pendant l&apos;essai.</li>
-          <li><strong>Premier paiement :</strong> Intervient 30 jours après l&apos;inscription, à la fin de la période d&apos;essai.</li>
+          <li><strong>Période d&apos;essai :</strong> 15 jours gratuits à compter de l&apos;inscription. Aucune carte bancaire requise pendant l&apos;essai.</li>
+          <li><strong>Premier paiement :</strong> Intervient 15 jours après l&apos;inscription, à la fin de la période d&apos;essai.</li>
           <li><strong>Moyens de paiement :</strong> Carte bancaire (Visa, Mastercard) via Stripe. Les paiements sont sécurisés et chiffrés.</li>
         </ul>
         <p>Les tarifs peuvent être modifiés à tout moment. Les modifications n&apos;affectent pas les abonnements en cours.</p>

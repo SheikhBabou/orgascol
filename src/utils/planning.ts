@@ -82,7 +82,11 @@ function getAvailableSlots(
       []
     );
 
-    let cursor = DAY_START;
+    const isSunday = dayOfWeek === 6;
+    const dayStart = isSunday ? 19 * 60 : DAY_START;
+    const dayEnd = isSunday ? 22 * 60 : DAY_END;
+
+    let cursor = dayStart;
     for (const block of occupied) {
       if (block.start > cursor) {
         const gap = block.start - cursor;
@@ -99,8 +103,8 @@ function getAvailableSlots(
       cursor = Math.max(cursor, block.end);
     }
 
-    if (DAY_END > cursor) {
-      const gap = DAY_END - cursor;
+    if (dayEnd > cursor) {
+      const gap = dayEnd - cursor;
       if (gap >= MIN_SLOT) {
         const duration = Math.min(gap, MAX_SLOT);
         slots.push({
@@ -111,7 +115,7 @@ function getAvailableSlots(
         });
         if (gap > MAX_SLOT + MIN_SLOT) {
           const secondStart = cursor + MAX_SLOT + 15;
-          const secondDuration = Math.min(DAY_END - secondStart, MAX_SLOT);
+          const secondDuration = Math.min(dayEnd - secondStart, MAX_SLOT);
           if (secondDuration >= MIN_SLOT) {
             slots.push({
               date: dateStr,

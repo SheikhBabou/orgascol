@@ -19,7 +19,7 @@ const categories = [
     questions: [
       {
         q: "Comment créer un compte sur Orga'Scol ?",
-        a: "Clique sur « Commencer » depuis la page d'accueil, renseigne ton email et un mot de passe. Ton compte est créé immédiatement avec 1 mois d'essai gratuit.",
+        a: "Clique sur « Commencer » depuis la page d'accueil, renseigne ton email et un mot de passe. Ton compte est créé immédiatement avec 15 jours d'essai gratuit.",
       },
       {
         q: "Puis-je modifier mon email ou mot de passe ?",
@@ -37,11 +37,11 @@ const categories = [
     questions: [
       {
         q: "Comment fonctionne l'essai gratuit ?",
-        a: "Tu bénéficies de 1 mois d'essai gratuit dès ton inscription. Toutes les fonctionnalités sont accessibles. Aucune carte bancaire n'est requise pendant l'essai.",
+        a: "Tu bénéficies de 15 jours d'essai gratuit dès ton inscription. Toutes les fonctionnalités sont accessibles. Aucune carte bancaire n'est requise pendant l'essai.",
       },
       {
         q: "Que se passe-t-il à la fin de l'essai ?",
-        a: "À la fin des 30 jours, tu choisis un abonnement (mensuel ou annuel) pour continuer. Sans abonnement, ton compte reste actif mais les fonctionnalités sont suspendues.",
+        a: "À la fin des 15 jours, tu choisis un abonnement (mensuel ou annuel) pour continuer. Sans abonnement, ton compte reste actif mais les fonctionnalités sont suspendues.",
       },
       {
         q: "Quels sont les tarifs ?",
