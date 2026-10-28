@@ -274,6 +274,8 @@ export default function SchedulePage() {
     slots.filter((s) => s.day_of_week === i)
   );
 
+  const subjectColorMap = new Map(subjects.map((s) => [s.name, s.color]));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -483,49 +485,110 @@ export default function SchedulePage() {
         </form>
       )}
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-3 stagger-children">
-        {DAYS.map((day, dayIndex) => (
-          <div key={day} className="bg-card-bg border border-border rounded-xl overflow-hidden card-interactive">
-            <button
-              onClick={() => openFormForDay(dayIndex)}
-              className="w-full px-3 py-2 border-b border-border bg-background/50 hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <p className="text-sm font-semibold text-center flex items-center justify-center gap-1.5">
-                {day}
-                <Plus className="w-3 h-3 text-muted" />
-              </p>
-            </button>
-            <div className="p-2 space-y-1.5 min-h-[100px]">
-              {slotsByDay[dayIndex].length === 0 ? (
-                <button
+      {/* Timeline grid */}
+      {(() => {
+        const allTimes = slots.flatMap((s) => {
+          const [sh, sm] = s.start_time.split(":").map(Number);
+          const [eh, em] = s.end_time.split(":").map(Number);
+          return [sh * 60 + sm, eh * 60 + em];
+        });
+        const gridStart = allTimes.length > 0 ? Math.floor(Math.min(...allTimes) / 60) : 8;
+        const gridEnd = allTimes.length > 0 ? Math.ceil(Math.max(...allTimes) / 60) : 20;
+        const totalMinutes = (gridEnd - gridStart) * 60;
+        const PX_PER_MIN = 1.2;
+
+        return (
+          <div className="bg-card-bg border border-border rounded-xl overflow-x-auto">
+            <div className="grid min-w-[700px]" style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}>
+              {/* Header */}
+              <div className="border-b border-border bg-background/50 px-1 py-2" />
+              {DAYS.map((day, dayIndex) => (
+                <div
+                  key={day}
                   onClick={() => openFormForDay(dayIndex)}
-                  className="w-full text-xs text-muted text-center py-4 hover:text-primary transition-colors cursor-pointer"
+                  className="border-b border-l border-border bg-background/50 px-2 py-2 cursor-pointer hover:bg-primary/5 transition-colors"
                 >
-                  + Ajouter
-                </button>
-              ) : (
-                slotsByDay[dayIndex].map((slot) => (
-                  <button
-                    key={slot.id}
-                    onClick={() => openEditSlot(slot)}
-                    className={`w-full text-left p-2 rounded-lg border text-xs transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer ${SLOT_COLOR} ${
-                      editingId === slot.id ? "ring-2 ring-primary" : ""
-                    }`}
+                  <p className="text-xs font-semibold text-center flex items-center justify-center gap-1">
+                    {day}
+                    <Plus className="w-3 h-3 text-muted" />
+                  </p>
+                </div>
+              ))}
+
+              {/* Time column + day columns */}
+              <div className="relative" style={{ height: totalMinutes * PX_PER_MIN }}>
+                {Array.from({ length: gridEnd - gridStart + 1 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="absolute right-0 left-0 flex items-start justify-end pr-1.5"
+                    style={{ top: i * 60 * PX_PER_MIN }}
                   >
-                    <p className="font-medium">
-                      {slot.label || "Cours"}
-                    </p>
-                    <p className="opacity-75">
-                      {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-                    </p>
-                  </button>
-                ))
-              )}
+                    <span className="text-[10px] text-muted leading-none -translate-y-1/2">
+                      {String(gridStart + i).padStart(2, "0")}h
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {DAYS.map((day, dayIndex) => (
+                <div
+                  key={day}
+                  className="relative border-l border-border cursor-pointer"
+                  style={{ height: totalMinutes * PX_PER_MIN }}
+                  onClick={() => openFormForDay(dayIndex)}
+                >
+                  {/* Hour lines */}
+                  {Array.from({ length: gridEnd - gridStart + 1 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="absolute left-0 right-0 border-t border-border/40"
+                      style={{ top: i * 60 * PX_PER_MIN }}
+                    />
+                  ))}
+
+                  {/* Slots */}
+                  {slotsByDay[dayIndex].map((slot) => {
+                    const [sh, sm] = slot.start_time.split(":").map(Number);
+                    const [eh, em] = slot.end_time.split(":").map(Number);
+                    const startMin = sh * 60 + sm - gridStart * 60;
+                    const endMin = eh * 60 + em - gridStart * 60;
+                    const color = slot.label ? subjectColorMap.get(slot.label) : undefined;
+
+                    return (
+                      <button
+                        key={slot.id}
+                        onClick={(e) => { e.stopPropagation(); openEditSlot(slot); }}
+                        className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer ${
+                          color ? "" : SLOT_COLOR
+                        } ${editingId === slot.id ? "ring-2 ring-primary" : ""}`}
+                        style={{
+                          top: startMin * PX_PER_MIN,
+                          height: Math.max((endMin - startMin) * PX_PER_MIN, 24),
+                          ...(color ? {
+                            backgroundColor: `${color}18`,
+                            borderColor: `${color}40`,
+                            color,
+                          } : {}),
+                        }}
+                      >
+                        <p className="font-medium truncate leading-tight">
+                          {slot.label || "Cours"}
+                        </p>
+                        <p
+                          style={color ? { color, opacity: 0.7 } : undefined}
+                          className={`leading-tight ${color ? "" : "opacity-75"}`}
+                        >
+                          {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       <ConfirmDialog
         open={deleteTarget !== null}
