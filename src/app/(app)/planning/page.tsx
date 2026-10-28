@@ -29,7 +29,7 @@ export default function PlanningPage() {
   const [hasExams, setHasExams] = useState(false);
   const [hasSchedule, setHasSchedule] = useState(false);
   const [view, setView] = useState<"agenda" | "exams">("agenda");
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const supabase = createClient();
 
   const autoGenerate = useCallback(async () => {
@@ -129,7 +129,7 @@ export default function PlanningPage() {
   }
 
   function toggleDate(date: string) {
-    setExpandedDates((prev) => {
+    setCollapsedDates((prev) => {
       const next = new Set(prev);
       if (next.has(date)) next.delete(date);
       else next.add(date);
@@ -312,7 +312,7 @@ export default function PlanningPage() {
         ) : (
           <div className="space-y-3">
             {dates.map((date) => {
-              const isExpanded = isToday(parseISO(date)) || isTomorrow(parseISO(date)) || expandedDates.has(date);
+              const isExpanded = !collapsedDates.has(date);
               const daySessions = sessionsByDate[date];
               return (
                 <div key={date} className="bg-card-bg border border-border rounded-xl overflow-hidden">
