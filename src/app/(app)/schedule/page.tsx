@@ -495,7 +495,7 @@ export default function SchedulePage() {
         const gridStart = allTimes.length > 0 ? Math.floor(Math.min(...allTimes) / 60) : 8;
         const gridEnd = allTimes.length > 0 ? Math.ceil(Math.max(...allTimes) / 60) : 20;
         const totalMinutes = (gridEnd - gridStart) * 60;
-        const PX_PER_MIN = 1.2;
+        const PX_PER_MIN = 0.6;
 
         return (
           <div className="bg-card-bg border border-border rounded-xl overflow-x-auto">
