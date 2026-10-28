@@ -245,8 +245,7 @@ export default function DashboardPage() {
           </h2>
           {todaySessions.length === 0 ? (
             <p className="text-muted text-sm">
-              Aucune révision prévue aujourd&apos;hui. Ajoute des examens et
-              génère ton planning !
+              Aucune révision prévue aujourd&apos;hui. Le planning se génère automatiquement selon tes examens.
             </p>
           ) : (
             <div className="space-y-3">

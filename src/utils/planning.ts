@@ -36,8 +36,8 @@ interface AvailableSlot {
 
 const DAY_START = 8 * 60; // 08:00
 const DAY_END = 22 * 60;  // 22:00
-const MIN_SLOT = 30;       // minimum 30 min pour une session
-const MAX_SLOT = 90;       // maximum 1h30 par session
+const MIN_SLOT = 60;       // minimum 1h pour une session
+const MAX_SLOT = 120;      // maximum 2h par session
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);

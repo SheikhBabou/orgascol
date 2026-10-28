@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Upload, X, Check, Loader2 } from "lucide-react";
+import { Plus, Trash2, Upload, X, Check, Loader2, Pencil, Clock } from "lucide-react";
 import type { ScheduleSlot, SlotType, Subject } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
 
@@ -87,6 +87,9 @@ export default function SchedulePage() {
   const [importStep, setImportStep] = useState<"url" | "preview">("url");
   const [insertingImport, setInsertingImport] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [popover, setPopover] = useState<{ slot: ScheduleSlot; x: number; y: number } | null>(null);
+  const [dragState, setDragState] = useState<{ dayIndex: number; startMin: number; currentMin: number } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadData();
@@ -487,18 +490,58 @@ export default function SchedulePage() {
 
       {/* Timeline grid */}
       {(() => {
-        const allTimes = slots.flatMap((s) => {
-          const [sh, sm] = s.start_time.split(":").map(Number);
-          const [eh, em] = s.end_time.split(":").map(Number);
-          return [sh * 60 + sm, eh * 60 + em];
-        });
-        const gridStart = allTimes.length > 0 ? Math.floor(Math.min(...allTimes) / 60) : 8;
-        const gridEnd = allTimes.length > 0 ? Math.ceil(Math.max(...allTimes) / 60) : 20;
+        const gridStart = 7;
+        const gridEnd = 21;
         const totalMinutes = (gridEnd - gridStart) * 60;
-        const PX_PER_MIN = 0.6;
+        const PX_PER_MIN = 0.7;
+
+        function snapTo15(minutes: number): number {
+          return Math.round(minutes / 15) * 15;
+        }
+
+        function getMinFromY(y: number): number {
+          return snapTo15(Math.floor(y / PX_PER_MIN) + gridStart * 60);
+        }
+
+        function fmt(totalMin: number): string {
+          const h = Math.floor(totalMin / 60);
+          const m = totalMin % 60;
+          return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        }
+
+        function handleDayMouseDown(dayIndex: number, e: React.MouseEvent<HTMLDivElement>) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const y = e.clientY - rect.top;
+          const min = getMinFromY(y);
+          setDragState({ dayIndex, startMin: min, currentMin: min });
+          setPopover(null);
+        }
+
+        function handleDayMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+          if (!dragState) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const y = e.clientY - rect.top;
+          const min = getMinFromY(y);
+          setDragState((prev) => prev ? { ...prev, currentMin: min } : null);
+        }
+
+        function handleDayMouseUp() {
+          if (!dragState) return;
+          const minStart = Math.min(dragState.startMin, dragState.currentMin);
+          const minEnd = Math.max(dragState.startMin, dragState.currentMin);
+          if (minEnd - minStart >= 15) {
+            setEditingId(null);
+            setFormDay(dragState.dayIndex);
+            setStartTime(fmt(minStart));
+            setEndTime(fmt(minEnd));
+            setSelectedSubject("");
+            setFormError("");
+          }
+          setDragState(null);
+        }
 
         return (
-          <div className="bg-card-bg border border-border rounded-xl overflow-x-auto">
+          <div className="bg-card-bg border border-border rounded-xl overflow-x-auto" ref={gridRef}>
             <div className="grid min-w-[700px]" style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}>
               {/* Header */}
               <div className="border-b border-border bg-background/50 px-1 py-2" />
@@ -515,7 +558,7 @@ export default function SchedulePage() {
                 </div>
               ))}
 
-              {/* Time column + day columns */}
+              {/* Time column */}
               <div className="relative" style={{ height: totalMinutes * PX_PER_MIN }}>
                 {Array.from({ length: gridEnd - gridStart + 1 }, (_, i) => (
                   <div
@@ -530,12 +573,16 @@ export default function SchedulePage() {
                 ))}
               </div>
 
+              {/* Day columns */}
               {DAYS.map((day, dayIndex) => (
                 <div
                   key={day}
-                  className="relative border-l border-border cursor-pointer"
-                  style={{ height: totalMinutes * PX_PER_MIN }}
-                  onClick={() => openFormForDay(dayIndex)}
+                  className="relative border-l border-border select-none"
+                  style={{ height: totalMinutes * PX_PER_MIN, cursor: "crosshair" }}
+                  onMouseDown={(e) => handleDayMouseDown(dayIndex, e)}
+                  onMouseMove={handleDayMouseMove}
+                  onMouseUp={handleDayMouseUp}
+                  onMouseLeave={() => { if (dragState) handleDayMouseUp(); }}
                 >
                   {/* Hour lines */}
                   {Array.from({ length: gridEnd - gridStart + 1 }, (_, i) => (
@@ -545,6 +592,19 @@ export default function SchedulePage() {
                       style={{ top: i * 60 * PX_PER_MIN }}
                     />
                   ))}
+
+                  {/* Drag preview */}
+                  {dragState && dragState.dayIndex === dayIndex && Math.abs(dragState.currentMin - dragState.startMin) >= 15 && (
+                    <div
+                      className="absolute left-1 right-1 rounded-lg border-2 border-dashed border-primary bg-primary/10 flex items-center justify-center text-xs text-primary font-medium pointer-events-none"
+                      style={{
+                        top: (Math.min(dragState.startMin, dragState.currentMin) - gridStart * 60) * PX_PER_MIN,
+                        height: Math.abs(dragState.currentMin - dragState.startMin) * PX_PER_MIN,
+                      }}
+                    >
+                      {fmt(Math.min(dragState.startMin, dragState.currentMin))} - {fmt(Math.max(dragState.startMin, dragState.currentMin))}
+                    </div>
+                  )}
 
                   {/* Slots */}
                   {slotsByDay[dayIndex].map((slot) => {
@@ -557,10 +617,19 @@ export default function SchedulePage() {
                     return (
                       <button
                         key={slot.id}
-                        onClick={(e) => { e.stopPropagation(); openEditSlot(slot); }}
-                        className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setPopover({
+                            slot,
+                            x: rect.left + rect.width / 2,
+                            y: rect.top,
+                          });
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
                           color ? "" : SLOT_COLOR
-                        } ${editingId === slot.id ? "ring-2 ring-primary" : ""}`}
+                        } ${popover?.slot.id === slot.id ? "ring-2 ring-primary" : ""}`}
                         style={{
                           top: startMin * PX_PER_MIN,
                           height: Math.max((endMin - startMin) * PX_PER_MIN, 24),
@@ -589,6 +658,67 @@ export default function SchedulePage() {
           </div>
         );
       })()}
+
+      {/* Popover */}
+      {popover && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPopover(null)} />
+          <div
+            className="fixed z-50 bg-card-bg border border-border rounded-xl shadow-lg p-4 w-72 animate-fade-in"
+            style={{
+              left: Math.min(popover.x - 144, window.innerWidth - 300),
+              top: popover.y - 10,
+              transform: "translateY(-100%)",
+            }}
+          >
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const c = popover.slot.label ? subjectColorMap.get(popover.slot.label) : undefined;
+                    return c ? (
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: c }} />
+                    ) : null;
+                  })()}
+                  <h3 className="font-semibold text-sm">{popover.slot.label || "Cours"}</h3>
+                </div>
+                <p className="text-xs text-muted mt-1 flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" />
+                  {DAYS[popover.slot.day_of_week]} &middot; {popover.slot.start_time.slice(0, 5)} - {popover.slot.end_time.slice(0, 5)}
+                </p>
+              </div>
+              <button
+                onClick={() => setPopover(null)}
+                className="p-1 hover:bg-background rounded-lg transition-colors shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  openEditSlot(popover.slot);
+                  setPopover(null);
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary-hover transition-colors"
+              >
+                <Pencil className="w-3 h-3" />
+                Modifier
+              </button>
+              <button
+                onClick={() => {
+                  setDeleteTarget({ id: popover.slot.id, name: popover.slot.label || "Cours" });
+                  setPopover(null);
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-danger/30 text-danger rounded-lg text-xs font-medium hover:bg-danger/5 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <ConfirmDialog
         open={deleteTarget !== null}
