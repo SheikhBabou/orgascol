@@ -86,6 +86,7 @@ export default function SchedulePage() {
   >([]);
   const [importStep, setImportStep] = useState<"url" | "preview">("url");
   const [insertingImport, setInsertingImport] = useState(false);
+  const [labelMapping, setLabelMapping] = useState<Record<string, string>>({});
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [popover, setPopover] = useState<{ slot: ScheduleSlot; x: number; y: number } | null>(null);
   const [dragState, setDragState] = useState<{ dayIndex: number; startMin: number; currentMin: number } | null>(null);
@@ -217,7 +218,16 @@ export default function SchedulePage() {
         setImportError("Aucun créneau trouvé dans ce calendrier.");
         return;
       }
-      setPreviewSlots(data.slots.map((s: { day_of_week: number; start_time: string; end_time: string; label: string }) => ({ ...s, selected: true })));
+      const parsed = data.slots.map((s: { day_of_week: number; start_time: string; end_time: string; label: string }) => ({ ...s, selected: true }));
+      setPreviewSlots(parsed);
+
+      const uniqueLabels = [...new Set(parsed.map((s: { label: string }) => s.label))] as string[];
+      const mapping: Record<string, string> = {};
+      for (const lbl of uniqueLabels) {
+        const match = subjects.find((sub) => sub.name.toLowerCase() === lbl.toLowerCase());
+        mapping[lbl] = match ? match.name : "";
+      }
+      setLabelMapping(mapping);
       setImportStep("preview");
     } catch {
       setImportError("Impossible de contacter le serveur.");
@@ -237,10 +247,12 @@ export default function SchedulePage() {
         day_of_week: s.day_of_week,
         start_time: s.start_time,
         end_time: s.end_time,
-        label: s.label,
+        label: labelMapping[s.label] || s.label,
         slot_type: "class" as SlotType,
         user_id: user.id,
       }));
+
+    await supabase.from("schedule_slots").delete().eq("user_id", user.id);
 
     if (toInsert.length > 0) {
       await supabase.from("schedule_slots").insert(toInsert);
@@ -257,6 +269,7 @@ export default function SchedulePage() {
     setPreviewSlots([]);
     setImportStep("url");
     setInsertingImport(false);
+    setLabelMapping({});
   }
 
   function togglePreviewSlot(index: number) {
@@ -346,9 +359,34 @@ export default function SchedulePage() {
             {importStep === "preview" && (
               <div className="flex flex-col overflow-hidden">
                 <div className="p-4 overflow-y-auto flex-1">
+                  {/* Subject mapping */}
+                  {Object.keys(labelMapping).length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      <p className="text-sm font-medium">Associer les cours à tes matières</p>
+                      <p className="text-xs text-muted mb-2">Pour que les couleurs et les noms correspondent à tes matières existantes.</p>
+                      {Object.keys(labelMapping).map((icalLabel) => (
+                        <div key={icalLabel} className="flex items-center gap-3">
+                          <span className="text-sm truncate min-w-0 flex-1">{icalLabel}</span>
+                          <span className="text-muted text-xs shrink-0">&rarr;</span>
+                          <select
+                            value={labelMapping[icalLabel]}
+                            onChange={(e) => setLabelMapping((prev) => ({ ...prev, [icalLabel]: e.target.value }))}
+                            className="flex-1 px-2 py-1.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          >
+                            <option value="">Garder tel quel</option>
+                            {subjects.map((s) => (
+                              <option key={s.id} value={s.name}>{s.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <p className="text-sm text-muted mb-3">
                     {previewSlots.filter((s) => s.selected).length} / {previewSlots.length} créneaux sélectionnés
                   </p>
+                  <p className="text-xs text-muted mb-2">L&apos;import remplacera tout l&apos;emploi du temps existant.</p>
                   <div className="space-y-1.5">
                     {previewSlots.map((slot, i) => (
                       <label
@@ -366,7 +404,12 @@ export default function SchedulePage() {
                           className="rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{slot.label}</p>
+                          <p className="text-sm font-medium truncate">
+                            {labelMapping[slot.label] || slot.label}
+                            {labelMapping[slot.label] && labelMapping[slot.label] !== slot.label && (
+                              <span className="text-xs text-muted ml-1">({slot.label})</span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted">
                             {DAYS[slot.day_of_week]} &middot; {slot.start_time} - {slot.end_time}
                           </p>
