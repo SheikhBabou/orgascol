@@ -31,18 +31,22 @@ export default function PlanningPage() {
   const supabase = createClient();
 
   const autoGenerate = useCallback(async () => {
-    const [examsRes, slotsRes] = await Promise.all([
+    const [examsRes, slotsRes, userRes] = await Promise.all([
       supabase
         .from("exams")
         .select("*, subject:subjects(*), chapters(*)"),
       supabase.from("schedule_slots").select("*"),
+      supabase.auth.getUser(),
     ]);
 
     const exams: Exam[] = examsRes.data ?? [];
     const slots: ScheduleSlot[] = slotsRes.data ?? [];
+    const userId = userRes.data.user?.id;
 
     setHasExams(exams.length > 0);
     setHasSchedule(slots.length > 0);
+
+    if (!userId) return;
 
     const hasUpcomingChapters = exams.some(
       (e) =>
@@ -51,7 +55,11 @@ export default function PlanningPage() {
     );
 
     if (hasUpcomingChapters && slots.length > 0) {
-      const newSessions = generatePlanning(exams, slots);
+      const newSessions = generatePlanning(exams, slots).map((s) => ({
+        ...s,
+        user_id: userId,
+        status: "pending" as const,
+      }));
 
       if (newSessions.length > 0) {
         await supabase

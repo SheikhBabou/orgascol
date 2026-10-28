@@ -27,7 +27,7 @@ const navigation = [
   { name: "Examens", href: "/exams", icon: BookOpen },
   { name: "Projets", href: "/projects", icon: FolderOpen },
   { name: "Emploi du temps", href: "/schedule", icon: Calendar },
-  { name: "Planning", href: "/planning", icon: ClipboardList },
+  { name: "Planning de révision", href: "/planning", icon: ClipboardList },
   { name: "Notes & Moyennes", href: "/grades", icon: Calculator },
 ];
 
