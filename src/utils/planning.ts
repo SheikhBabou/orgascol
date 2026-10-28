@@ -34,6 +34,22 @@ interface AvailableSlot {
   duration_minutes: number;
 }
 
+const DAY_START = 8 * 60; // 08:00
+const DAY_END = 22 * 60;  // 22:00
+const MIN_SLOT = 30;       // minimum 30 min pour une session
+const MAX_SLOT = 90;       // maximum 1h30 par session
+
+function toMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function fromMinutes(mins: number): string {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 function getAvailableSlots(
   scheduleSlots: ScheduleSlot[],
   startDate: Date,
@@ -44,51 +60,66 @@ function getAvailableSlots(
 
   while (isBefore(current, endDate) || isEqual(current, endDate)) {
     const dayOfWeek = (current.getDay() + 6) % 7; // 0=Mon
+    const dateStr = format(current, "yyyy-MM-dd");
 
-    const revisionSlots = scheduleSlots.filter(
-      (s) => s.day_of_week === dayOfWeek && s.slot_type === "revision"
+    const classSlots = scheduleSlots
+      .filter((s) => s.day_of_week === dayOfWeek)
+      .map((s) => ({
+        start: toMinutes(s.start_time),
+        end: toMinutes(s.end_time),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    const occupied = classSlots.reduce<{ start: number; end: number }[]>(
+      (merged, slot) => {
+        if (merged.length > 0 && slot.start <= merged[merged.length - 1].end) {
+          merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, slot.end);
+        } else {
+          merged.push({ ...slot });
+        }
+        return merged;
+      },
+      []
     );
 
-    if (revisionSlots.length > 0) {
-      for (const rs of revisionSlots) {
-        const [sh, sm] = rs.start_time.split(":").map(Number);
-        const [eh, em] = rs.end_time.split(":").map(Number);
-        const duration = (eh * 60 + em) - (sh * 60 + sm);
-        if (duration > 0) {
+    let cursor = DAY_START;
+    for (const block of occupied) {
+      if (block.start > cursor) {
+        const gap = block.start - cursor;
+        if (gap >= MIN_SLOT) {
+          const duration = Math.min(gap, MAX_SLOT);
           slots.push({
-            date: format(current, "yyyy-MM-dd"),
-            start_time: rs.start_time.slice(0, 5),
-            end_time: rs.end_time.slice(0, 5),
+            date: dateStr,
+            start_time: fromMinutes(cursor),
+            end_time: fromMinutes(cursor + duration),
             duration_minutes: duration,
           });
         }
       }
-    } else {
-      const busySlots = scheduleSlots.filter(
-        (s) => s.day_of_week === dayOfWeek && s.slot_type !== "revision"
-      );
+      cursor = Math.max(cursor, block.end);
+    }
 
-      const defaultRevisionSlots = [
-        { start: "18:00", end: "19:30" },
-        { start: "20:00", end: "21:00" },
-      ];
-
-      for (const def of defaultRevisionSlots) {
-        const overlaps = busySlots.some((b) => {
-          const bStart = b.start_time.slice(0, 5);
-          const bEnd = b.end_time.slice(0, 5);
-          return bStart < def.end && bEnd > def.start;
+    if (DAY_END > cursor) {
+      const gap = DAY_END - cursor;
+      if (gap >= MIN_SLOT) {
+        const duration = Math.min(gap, MAX_SLOT);
+        slots.push({
+          date: dateStr,
+          start_time: fromMinutes(cursor),
+          end_time: fromMinutes(cursor + duration),
+          duration_minutes: duration,
         });
-
-        if (!overlaps) {
-          const [sh, sm] = def.start.split(":").map(Number);
-          const [eh, em] = def.end.split(":").map(Number);
-          slots.push({
-            date: format(current, "yyyy-MM-dd"),
-            start_time: def.start,
-            end_time: def.end,
-            duration_minutes: (eh * 60 + em) - (sh * 60 + sm),
-          });
+        if (gap > MAX_SLOT + MIN_SLOT) {
+          const secondStart = cursor + MAX_SLOT + 15;
+          const secondDuration = Math.min(DAY_END - secondStart, MAX_SLOT);
+          if (secondDuration >= MIN_SLOT) {
+            slots.push({
+              date: dateStr,
+              start_time: fromMinutes(secondStart),
+              end_time: fromMinutes(secondStart + secondDuration),
+              duration_minutes: secondDuration,
+            });
+          }
         }
       }
     }

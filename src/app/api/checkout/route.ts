@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
         {
           price_data: {
             currency: "eur",
-            product_data: { name: "Orga'Scol - Annuel (année scolaire)" },
-            unit_amount: 9990,
+            product_data: { name: "Orga'Scol - Annuel" },
+            unit_amount: 4999,
           },
           quantity: 1,
         },

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { RefreshCw, CheckCircle2, SkipForward, CalendarDays } from "lucide-react";
+import { CheckCircle2, SkipForward, CalendarDays, BookOpen, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { generatePlanning } from "@/utils/planning";
 import type { Exam, ScheduleSlot, RevisionSession, SessionStatus } from "@/types/database";
-import EmptyState from "@/components/empty-state";
+import Link from "next/link";
 
 const METHOD_LABELS: Record<string, string> = {
   first_read: "1re lecture",
@@ -26,26 +26,11 @@ const METHOD_COLORS: Record<string, string> = {
 export default function PlanningPage() {
   const [sessions, setSessions] = useState<RevisionSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const [hasExams, setHasExams] = useState(false);
+  const [hasSchedule, setHasSchedule] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
-  async function loadSessions() {
-    const { data } = await supabase
-      .from("revision_sessions")
-      .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
-      .order("scheduled_date")
-      .order("start_time");
-    if (data) setSessions(data);
-    setLoading(false);
-  }
-
-  async function handleGenerate() {
-    setGenerating(true);
-
+  const autoGenerate = useCallback(async () => {
     const [examsRes, slotsRes] = await Promise.all([
       supabase
         .from("exams")
@@ -56,21 +41,40 @@ export default function PlanningPage() {
     const exams: Exam[] = examsRes.data ?? [];
     const slots: ScheduleSlot[] = slotsRes.data ?? [];
 
-    const newSessions = generatePlanning(exams, slots);
+    setHasExams(exams.length > 0);
+    setHasSchedule(slots.length > 0);
 
-    if (newSessions.length > 0) {
-      // Clear old pending sessions
-      await supabase
-        .from("revision_sessions")
-        .delete()
-        .eq("status", "pending");
+    const hasUpcomingChapters = exams.some(
+      (e) =>
+        new Date(e.exam_date) >= new Date() &&
+        (e.chapters ?? []).some((c) => c.status !== "completed")
+    );
 
-      await supabase.from("revision_sessions").insert(newSessions);
+    if (hasUpcomingChapters && slots.length > 0) {
+      const newSessions = generatePlanning(exams, slots);
+
+      if (newSessions.length > 0) {
+        await supabase
+          .from("revision_sessions")
+          .delete()
+          .eq("status", "pending");
+
+        await supabase.from("revision_sessions").insert(newSessions);
+      }
     }
 
-    await loadSessions();
-    setGenerating(false);
-  }
+    const { data } = await supabase
+      .from("revision_sessions")
+      .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
+      .order("scheduled_date")
+      .order("start_time");
+    if (data) setSessions(data);
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => {
+    autoGenerate();
+  }, [autoGenerate]);
 
   async function updateSessionStatus(id: string, status: SessionStatus) {
     await supabase
@@ -102,7 +106,12 @@ export default function PlanningPage() {
       }
     }
 
-    loadSessions();
+    const { data } = await supabase
+      .from("revision_sessions")
+      .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
+      .order("scheduled_date")
+      .order("start_time");
+    if (data) setSessions(data);
   }
 
   if (loading) {
@@ -112,6 +121,9 @@ export default function PlanningPage() {
       </div>
     );
   }
+
+  const pending = sessions.filter((s) => s.status === "pending");
+  const completed = sessions.filter((s) => s.status === "completed");
 
   const sessionsByDate = sessions.reduce(
     (acc, s) => {
@@ -125,41 +137,130 @@ export default function PlanningPage() {
 
   const dates = Object.keys(sessionsByDate).sort();
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+  if (!hasExams && !hasSchedule) {
+    return (
+      <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Planning de révisions</h1>
           <p className="text-muted text-sm mt-1">
-            {sessions.filter((s) => s.status === "pending").length} session
-            {sessions.filter((s) => s.status === "pending").length !== 1
-              ? "s"
-              : ""}{" "}
-            restante
-            {sessions.filter((s) => s.status === "pending").length !== 1
-              ? "s"
-              : ""}
+            Ton planning se génère automatiquement
           </p>
         </div>
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
-        >
-          <RefreshCw
-            className={`w-4 h-4 ${generating ? "animate-spin" : ""}`}
-          />
-          {generating ? "Génération..." : "Générer le planning"}
-        </button>
+        <div className="bg-card-bg border border-border rounded-xl p-8 text-center space-y-4">
+          <CalendarDays className="w-12 h-12 text-muted mx-auto" />
+          <h2 className="text-lg font-semibold">Pour commencer</h2>
+          <p className="text-sm text-muted max-w-md mx-auto">
+            Renseigne tes matières, tes examens avec leurs chapitres, et ton emploi du temps.
+            Le planning de révisions se créera automatiquement.
+          </p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Link
+              href="/subjects"
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+            >
+              Ajouter des matières
+            </Link>
+            <Link
+              href="/schedule"
+              className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
+            >
+              Saisir l&apos;emploi du temps
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasExams) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Planning de révisions</h1>
+          <p className="text-muted text-sm mt-1">
+            Ton planning se génère automatiquement
+          </p>
+        </div>
+        <div className="bg-card-bg border border-border rounded-xl p-8 text-center space-y-4">
+          <BookOpen className="w-12 h-12 text-muted mx-auto" />
+          <h2 className="text-lg font-semibold">Ajoute tes examens</h2>
+          <p className="text-sm text-muted max-w-md mx-auto">
+            Ton emploi du temps est renseigné. Ajoute maintenant tes examens avec leurs chapitres
+            pour que le planning de révisions se génère.
+          </p>
+          <Link
+            href="/exams"
+            className="inline-flex px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+          >
+            Ajouter des examens
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasSchedule) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Planning de révisions</h1>
+          <p className="text-muted text-sm mt-1">
+            Ton planning se génère automatiquement
+          </p>
+        </div>
+        <div className="bg-card-bg border border-border rounded-xl p-8 text-center space-y-4">
+          <Clock className="w-12 h-12 text-muted mx-auto" />
+          <h2 className="text-lg font-semibold">Saisis ton emploi du temps</h2>
+          <p className="text-sm text-muted max-w-md mx-auto">
+            Tes examens sont enregistrés. Renseigne maintenant tes heures de cours
+            pour que le planning utilise tes créneaux libres.
+          </p>
+          <Link
+            href="/schedule"
+            className="inline-flex px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+          >
+            Saisir l&apos;emploi du temps
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Planning de révisions</h1>
+        <p className="text-muted text-sm mt-1">
+          Généré automatiquement selon tes examens et ton emploi du temps
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="bg-card-bg border border-border rounded-xl p-4">
+          <p className="text-xs text-muted">Sessions restantes</p>
+          <p className="text-2xl font-bold mt-1">{pending.length}</p>
+        </div>
+        <div className="bg-card-bg border border-border rounded-xl p-4">
+          <p className="text-xs text-muted">Terminées</p>
+          <p className="text-2xl font-bold mt-1 text-success">{completed.length}</p>
+        </div>
+        <div className="bg-card-bg border border-border rounded-xl p-4 col-span-2 md:col-span-1">
+          <p className="text-xs text-muted">Progression</p>
+          <p className="text-2xl font-bold mt-1 text-primary">
+            {sessions.length > 0 ? Math.round((completed.length / sessions.length) * 100) : 0}%
+          </p>
+        </div>
       </div>
 
       {dates.length === 0 ? (
-        <EmptyState
-          icon={CalendarDays}
-          title="Aucune session planifiée"
-          description="Ajoute des examens avec des chapitres, renseigne ton emploi du temps, puis génère ton planning."
-          action={{ label: "Générer le planning", onClick: handleGenerate }}
-        />
+        <div className="bg-card-bg border border-border rounded-xl p-8 text-center space-y-3">
+          <CheckCircle2 className="w-12 h-12 text-success mx-auto" />
+          <h2 className="text-lg font-semibold">Tout est à jour !</h2>
+          <p className="text-sm text-muted">
+            Aucune session de révision à planifier. Ajoute de nouveaux examens ou chapitres pour générer de nouvelles sessions.
+          </p>
+        </div>
       ) : (
         <div className="space-y-6 stagger-children">
           {dates.map((date) => (

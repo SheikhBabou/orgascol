@@ -15,15 +15,14 @@ export function getStripe() {
 export const PLANS = {
   mensuel: {
     name: "Mensuel",
-    price: 1199,
+    price: 599,
     interval: "month" as const,
-    description: "11,99€/mois - résiliable à tout moment",
+    description: "5,99€/mois - résiliable à tout moment",
   },
   annuel: {
-    name: "Annuel (année scolaire)",
-    price: 999,
-    interval: "month" as const,
-    intervalCount: 10,
-    description: "9,99€/mois - 99,90€ sur 10 mois",
+    name: "Annuel",
+    price: 4999,
+    interval: "year" as const,
+    description: "49,99€/an - paiement en une fois",
   },
 };

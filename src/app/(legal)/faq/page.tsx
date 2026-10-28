@@ -45,11 +45,11 @@ const categories = [
       },
       {
         q: "Quels sont les tarifs ?",
-        a: "Deux formules : Mensuel à 11,99€/mois (résiliable à tout moment) ou Annuel à 9,99€/mois soit 99,90€ l'année scolaire (10 mois), payable mensuellement ou en une fois.",
+        a: "Deux formules : Mensuel à 5,99€/mois (résiliable à tout moment) ou Annuel à 49,99€ payé en une fois (soit 4,17€/mois).",
       },
       {
         q: "Comment annuler mon abonnement ?",
-        a: "Pour le mensuel, va dans Abonnement depuis ton espace et résilie en un clic. L'accès reste actif jusqu'à la fin du mois en cours. L'annuel est un engagement sur l'année scolaire.",
+        a: "Pour le mensuel, va dans Abonnement depuis ton espace et résilie en un clic. L'accès reste actif jusqu'à la fin du mois en cours. L'annuel est un engagement sur 12 mois.",
       },
       {
         q: "Puis-je obtenir un remboursement ?",

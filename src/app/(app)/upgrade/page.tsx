@@ -116,7 +116,7 @@ export default function UpgradePage() {
             </div>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold">11,99€</span>
+            <span className="text-3xl font-bold">5,99€</span>
             <span className="text-muted">/mois</span>
           </div>
           <p className="text-sm text-muted">Flexible, résiliable à tout moment. Parfait pour tester au-delà de l&apos;essai.</p>
@@ -144,7 +144,7 @@ export default function UpgradePage() {
           }`}
         >
           <div className="absolute -top-3 left-4 px-3 py-0.5 bg-primary text-white text-xs font-bold rounded-full">
-            -17%
+            -30%
           </div>
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-lg">Annuel</h3>
@@ -155,15 +155,15 @@ export default function UpgradePage() {
             </div>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold">9,99€</span>
-            <span className="text-muted">/mois</span>
+            <span className="text-3xl font-bold">49,99€</span>
+            <span className="text-muted">/an</span>
           </div>
-          <p className="text-sm text-muted">Engagement année scolaire (10 mois). Le meilleur prix.</p>
+          <p className="text-sm text-muted">Paiement en une fois. Le meilleur prix.</p>
           <ul className="space-y-2">
             {[
               "Toutes les fonctionnalités",
-              "Économise 2 mois vs mensuel",
-              "99,90€ l'année scolaire",
+              "Économise 30% vs mensuel",
+              "Soit 4,17€/mois",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2 text-sm">
                 <Check className="w-3.5 h-3.5 text-success shrink-0" />
@@ -174,34 +174,10 @@ export default function UpgradePage() {
         </button>
       </div>
 
-      {/* Annual payment option */}
+      {/* Annual info */}
       {selectedPlan === "annuel" && (
-        <div className="bg-card-bg border border-border rounded-2xl p-5 space-y-3 animate-fade-in">
-          <p className="text-sm font-semibold">Mode de paiement annuel</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              onClick={() => setAnnualPayment("monthly")}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
-                annualPayment === "monthly"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/30"
-              }`}
-            >
-              <p className="text-sm font-semibold">Mensuel</p>
-              <p className="text-xs text-muted mt-1">9,99€/mois pendant 10 mois</p>
-            </button>
-            <button
-              onClick={() => setAnnualPayment("once")}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
-                annualPayment === "once"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/30"
-              }`}
-            >
-              <p className="text-sm font-semibold">En une fois</p>
-              <p className="text-xs text-muted mt-1">99,90€ - un seul paiement</p>
-            </button>
-          </div>
+        <div className="bg-card-bg border border-border rounded-2xl p-5 animate-fade-in">
+          <p className="text-sm text-muted">Paiement unique de <strong>49,99€</strong> pour 12 mois d&apos;accès.</p>
         </div>
       )}
 
@@ -219,9 +195,9 @@ export default function UpgradePage() {
           )}
           {loading
             ? "Redirection vers Stripe..."
-            : selectedPlan === "annuel" && annualPayment === "once"
-              ? "Payer 99,90€"
-              : `S'abonner - ${selectedPlan === "annuel" ? "9,99" : "11,99"}€/mois`}
+            : selectedPlan === "annuel"
+              ? "Payer 49,99€"
+              : "S'abonner - 5,99€/mois"}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
@@ -232,7 +208,7 @@ export default function UpgradePage() {
           </span>
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
-            {selectedPlan === "mensuel" ? "Résiliable à tout moment" : "Engagement 10 mois"}
+            {selectedPlan === "mensuel" ? "Résiliable à tout moment" : "Engagement 12 mois"}
           </span>
         </div>
       </div>

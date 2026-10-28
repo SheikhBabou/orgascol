@@ -379,7 +379,7 @@ export default function Home() {
                 <p className="text-sm text-muted mt-1">Flexible, résiliable à tout moment</p>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold">11,99€</span>
+                <span className="text-4xl font-bold">5,99€</span>
                 <span className="text-muted">/mois</span>
               </div>
               <ul className="space-y-3">
@@ -411,17 +411,17 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold">
                 <Crown className="w-3.5 h-3.5" />
-                Économise 17%
+                Économise 30%
               </div>
               <div className="relative">
                 <h3 className="text-lg font-semibold">Annuel</h3>
-                <p className="text-sm text-white/60 mt-1">Engagement année scolaire (10 mois), meilleur prix</p>
+                <p className="text-sm text-white/60 mt-1">Paiement en une fois, meilleur prix</p>
               </div>
               <div className="relative flex items-baseline gap-1">
-                <span className="text-4xl font-bold">9,99€</span>
-                <span className="text-white/60">/mois</span>
+                <span className="text-4xl font-bold">49,99€</span>
+                <span className="text-white/60">/an</span>
               </div>
-              <p className="text-xs text-white/40 -mt-3">Soit 99,90€ l&apos;année scolaire - paiement mensuel ou en une fois</p>
+              <p className="text-xs text-white/40 -mt-3">Soit 4,17€/mois - économise 30% vs mensuel</p>
               <ul className="relative space-y-3">
                 {[
                   "1 mois d'essai gratuit",
@@ -429,7 +429,7 @@ export default function Home() {
                   "Planning de révision illimité",
                   "Import emploi du temps iCal",
                   "Notes & moyennes par UE",
-                  "2 mois économisés vs mensuel",
+                  "Économise 30% vs mensuel",
                 ].map((feature) => (
                   <li key={feature} className="flex items-start gap-2.5 text-sm">
                     <Check className="w-4 h-4 text-white/80 shrink-0 mt-0.5" />
@@ -449,7 +449,7 @@ export default function Home() {
 
           <p className="text-center text-xs text-muted mt-8">
             Essai gratuit de 30 jours. Aucun paiement requis pendant la p&eacute;riode d&apos;essai.
-            L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de l&apos;année scolaire.
+            L&apos;abonnement annuel n&apos;est pas résiliable avant la fin de la période.
           </p>
         </div>
       </section>

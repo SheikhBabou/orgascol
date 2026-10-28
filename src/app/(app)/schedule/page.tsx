@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2, Upload, X, Check, Loader2 } from "lucide-react";
-import type { ScheduleSlot, SlotType } from "@/types/database";
+import type { ScheduleSlot, SlotType, Subject } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
 
 const DAYS = [
@@ -16,30 +16,66 @@ const DAYS = [
   "Dimanche",
 ];
 
-const SLOT_TYPE_LABELS: Record<SlotType, string> = {
-  class: "Cours",
-  busy: "Occupé",
-  revision: "Révision",
-};
+const SLOT_COLOR = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800";
 
-const SLOT_TYPE_COLORS: Record<SlotType, string> = {
-  class: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
-  busy: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
-  revision: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
-};
+const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7h - 21h
+const MINUTES = ["00", "15", "30"];
+
+function TimeSelect({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const [h, m] = value.split(":");
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1.5">{label} *</label>
+      <div className="flex items-center gap-1.5">
+        <select
+          value={h}
+          onChange={(e) => onChange(`${e.target.value}:${m}`)}
+          className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          {HOURS.map((hr) => (
+            <option key={hr} value={String(hr).padStart(2, "0")}>
+              {String(hr).padStart(2, "0")}h
+            </option>
+          ))}
+        </select>
+        <span className="text-muted font-bold">:</span>
+        <select
+          value={m}
+          onChange={(e) => onChange(`${h}:${e.target.value}`)}
+          className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          {MINUTES.map((min) => (
+            <option key={min} value={min}>
+              {min}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
 
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ScheduleSlot[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  const [dayOfWeek, setDayOfWeek] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formDay, setFormDay] = useState<number | null>(null);
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("09:00");
-  const [label, setLabel] = useState("");
-  const [slotType, setSlotType] = useState<SlotType>("class");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const [showImport, setShowImport] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
@@ -53,45 +89,111 @@ export default function SchedulePage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
-    loadSlots();
+    loadData();
   }, []);
 
-  async function loadSlots() {
-    const { data } = await supabase
-      .from("schedule_slots")
-      .select("*")
-      .order("day_of_week")
-      .order("start_time");
-    if (data) setSlots(data);
+  async function loadData() {
+    const [slotsRes, subjectsRes] = await Promise.all([
+      supabase
+        .from("schedule_slots")
+        .select("*")
+        .order("day_of_week")
+        .order("start_time"),
+      supabase.from("subjects").select("*").order("name"),
+    ]);
+    if (slotsRes.data) setSlots(slotsRes.data);
+    if (subjectsRes.data) setSubjects(subjectsRes.data);
     setLoading(false);
+  }
+
+  function openFormForDay(dayIndex: number) {
+    setEditingId(null);
+    setFormDay(dayIndex);
+    setStartTime("08:00");
+    setEndTime("09:00");
+    setSelectedSubject("");
+    setFormError("");
+  }
+
+  function openEditSlot(slot: ScheduleSlot) {
+    setEditingId(slot.id);
+    setFormDay(slot.day_of_week);
+    setStartTime(slot.start_time.slice(0, 5));
+    setEndTime(slot.end_time.slice(0, 5));
+    setSelectedSubject(slot.label ?? "");
+    setFormError("");
+  }
+
+  function closeForm() {
+    setFormDay(null);
+    setEditingId(null);
+    setFormError("");
+  }
+
+  function hasOverlap(day: number, start: string, end: string, excludeId?: string): boolean {
+    return slots.some(
+      (s) =>
+        s.day_of_week === day &&
+        s.id !== excludeId &&
+        s.start_time.slice(0, 5) < end &&
+        s.end_time.slice(0, 5) > start
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
+    if (formDay === null) return;
+    setFormError("");
 
+    if (startTime >= endTime) {
+      setFormError("L'heure de fin doit être après l'heure de début.");
+      return;
+    }
+
+    if (hasOverlap(formDay, startTime, endTime, editingId ?? undefined)) {
+      setFormError("Un créneau existe déjà sur cette plage horaire.");
+      return;
+    }
+
+    setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
 
-    await supabase.from("schedule_slots").insert({
-      day_of_week: dayOfWeek,
-      start_time: startTime,
-      end_time: endTime,
-      label: label || null,
-      slot_type: slotType,
-      user_id: user.id,
-    });
-    setLabel("");
-    setShowForm(false);
+    const label = selectedSubject || null;
+
+    if (editingId) {
+      await supabase
+        .from("schedule_slots")
+        .update({
+          day_of_week: formDay,
+          start_time: startTime,
+          end_time: endTime,
+          label,
+          slot_type: "class" as SlotType,
+        })
+        .eq("id", editingId);
+    } else {
+      await supabase.from("schedule_slots").insert({
+        day_of_week: formDay,
+        start_time: startTime,
+        end_time: endTime,
+        label,
+        slot_type: "class" as SlotType,
+        user_id: user.id,
+      });
+    }
+
+    closeForm();
     setSaving(false);
-    loadSlots();
+    loadData();
   }
 
   async function handleConfirmDelete() {
     if (!deleteTarget) return;
     await supabase.from("schedule_slots").delete().eq("id", deleteTarget.id);
     setDeleteTarget(null);
-    loadSlots();
+    if (editingId === deleteTarget.id) closeForm();
+    loadData();
   }
 
   async function fetchIcalPreview() {
@@ -142,7 +244,7 @@ export default function SchedulePage() {
     }
 
     resetImport();
-    loadSlots();
+    loadData();
   }
 
   function resetImport() {
@@ -174,31 +276,23 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Emploi du temps</h1>
           <p className="text-muted text-sm mt-1">
-            Indique tes créneaux de cours, occupations et disponibilités
+            Saisis tes heures de cours. Clique sur un jour pour ajouter, sur un cours pour le modifier.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg font-medium hover:bg-background transition-colors text-sm"
-          >
-            <Upload className="w-4 h-4" />
-            Importer (iCal)
-          </button>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Ajouter un créneau
-          </button>
-        </div>
+        <button
+          onClick={() => setShowImport(true)}
+          className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg font-medium hover:bg-background transition-colors text-sm"
+        >
+          <Upload className="w-4 h-4" />
+          Importer (iCal)
+        </button>
       </div>
 
+      {/* Import modal */}
       {showImport && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-overlay-in">
           <div className="bg-card-bg border border-border rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col animate-fade-in-scale">
@@ -302,126 +396,130 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {showForm && (
+      {/* Inline form (appears when a day is clicked or a slot is being edited) */}
+      {formDay !== null && (
         <form
           onSubmit={handleSubmit}
-          className="bg-card-bg border border-border rounded-xl p-6 space-y-4"
+          className="bg-card-bg border border-primary/30 rounded-xl p-5 space-y-4 animate-fade-in"
         >
-          <h2 className="font-semibold">Nouveau créneau</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">
+              {editingId ? "Modifier le créneau" : "Nouveau créneau"} - {DAYS[formDay]}
+            </h2>
+            <button type="button" onClick={closeForm} className="p-1 hover:bg-background rounded-lg transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1.5">Jour *</label>
               <select
-                value={dayOfWeek}
-                onChange={(e) => setDayOfWeek(Number(e.target.value))}
+                value={formDay}
+                onChange={(e) => setFormDay(Number(e.target.value))}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
                 {DAYS.map((d, i) => (
-                  <option key={i} value={i}>
-                    {d}
-                  </option>
+                  <option key={i} value={i}>{d}</option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Type *</label>
+            <TimeSelect label="Début" value={startTime} onChange={setStartTime} />
+            <TimeSelect label="Fin" value={endTime} onChange={setEndTime} />
+            <div className="md:col-span-3">
+              <label className="block text-sm font-medium mb-1.5">Matière *</label>
               <select
-                value={slotType}
-                onChange={(e) => setSlotType(e.target.value as SlotType)}
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                required
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="class">Cours</option>
-                <option value="busy">Occupé</option>
-                <option value="revision">Créneau de révision</option>
+                <option value="">Sélectionner une matière</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">
-                Début *
-              </label>
-              <input
-                type="time"
-                required
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Fin *</label>
-              <input
-                type="time"
-                required
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1.5">
-                Libellé (optionnel)
-              </label>
-              <input
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ex: Maths, Sport, Travail..."
-              />
+              {subjects.length === 0 && (
+                <p className="text-xs text-muted mt-1">
+                  Aucune matière créée. Ajoute tes matières dans l&apos;onglet Matières d&apos;abord.
+                </p>
+              )}
             </div>
           </div>
+
+          {formError && (
+            <p className="text-sm text-danger bg-danger/10 px-3 py-2 rounded-lg">{formError}</p>
+          )}
 
           <div className="flex gap-3">
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
             >
-              {saving ? "Enregistrement..." : "Enregistrer"}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {saving ? "Enregistrement..." : editingId ? "Modifier" : "Ajouter"}
             </button>
             <button
               type="button"
-              onClick={() => setShowForm(false)}
+              onClick={closeForm}
               className="px-6 py-2 border border-border rounded-lg text-sm hover:bg-background transition-colors"
             >
               Annuler
             </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => {
+                  const slot = slots.find((s) => s.id === editingId);
+                  if (slot) setDeleteTarget({ id: slot.id, name: slot.label || "Cours" });
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-danger/30 text-danger rounded-lg text-sm hover:bg-danger/5 transition-colors ml-auto"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer
+              </button>
+            )}
           </div>
         </form>
       )}
 
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-7 gap-3 stagger-children">
         {DAYS.map((day, dayIndex) => (
           <div key={day} className="bg-card-bg border border-border rounded-xl overflow-hidden card-interactive">
-            <div className="px-3 py-2 border-b border-border bg-background/50">
-              <p className="text-sm font-semibold text-center">{day}</p>
-            </div>
+            <button
+              onClick={() => openFormForDay(dayIndex)}
+              className="w-full px-3 py-2 border-b border-border bg-background/50 hover:bg-primary/5 transition-colors cursor-pointer"
+            >
+              <p className="text-sm font-semibold text-center flex items-center justify-center gap-1.5">
+                {day}
+                <Plus className="w-3 h-3 text-muted" />
+              </p>
+            </button>
             <div className="p-2 space-y-1.5 min-h-[100px]">
               {slotsByDay[dayIndex].length === 0 ? (
-                <p className="text-xs text-muted text-center py-4">-</p>
+                <button
+                  onClick={() => openFormForDay(dayIndex)}
+                  className="w-full text-xs text-muted text-center py-4 hover:text-primary transition-colors cursor-pointer"
+                >
+                  + Ajouter
+                </button>
               ) : (
                 slotsByDay[dayIndex].map((slot) => (
-                  <div
+                  <button
                     key={slot.id}
-                    className={`p-2 rounded-lg border text-xs ${SLOT_TYPE_COLORS[slot.slot_type]}`}
+                    onClick={() => openEditSlot(slot)}
+                    className={`w-full text-left p-2 rounded-lg border text-xs transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer ${SLOT_COLOR} ${
+                      editingId === slot.id ? "ring-2 ring-primary" : ""
+                    }`}
                   >
-                    <div className="flex items-start justify-between gap-1">
-                      <div>
-                        <p className="font-medium">
-                          {slot.label || SLOT_TYPE_LABELS[slot.slot_type]}
-                        </p>
-                        <p className="opacity-75">
-                          {slot.start_time.slice(0, 5)} -{" "}
-                          {slot.end_time.slice(0, 5)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setDeleteTarget({ id: slot.id, name: slot.label || SLOT_TYPE_LABELS[slot.slot_type] })}
-                        className="opacity-50 hover:opacity-100 p-0.5"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
+                    <p className="font-medium">
+                      {slot.label || "Cours"}
+                    </p>
+                    <p className="opacity-75">
+                      {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                    </p>
+                  </button>
                 ))
               )}
             </div>

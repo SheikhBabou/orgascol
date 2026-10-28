@@ -63,13 +63,13 @@ const sections = [
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3">
           <div className="p-4 rounded-xl bg-background border border-border">
             <p className="font-semibold text-sm">Mensuel</p>
-            <p className="text-2xl font-bold mt-1">11,99€<span className="text-sm font-normal text-muted">/mois</span></p>
+            <p className="text-2xl font-bold mt-1">5,99€<span className="text-sm font-normal text-muted">/mois</span></p>
             <p className="text-xs text-muted mt-1">Résiliable à tout moment</p>
           </div>
           <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-            <p className="font-semibold text-sm text-primary">Annuel (année scolaire)</p>
-            <p className="text-2xl font-bold mt-1">9,99€<span className="text-sm font-normal text-muted">/mois</span></p>
-            <p className="text-xs text-muted mt-1">99,90€ sur 10 mois - paiement mensuel ou en une fois</p>
+            <p className="font-semibold text-sm text-primary">Annuel</p>
+            <p className="text-2xl font-bold mt-1">49,99€<span className="text-sm font-normal text-muted">/an</span></p>
+            <p className="text-xs text-muted mt-1">Paiement en une fois - soit 4,17€/mois</p>
           </div>
         </div>
         <ul>
@@ -89,7 +89,7 @@ const sections = [
       <>
         <ul>
           <li><strong>Abonnement Mensuel :</strong> Renouvelé automatiquement chaque mois. Vous pouvez annuler à tout moment depuis votre espace Abonnement.</li>
-          <li><strong>Abonnement Annuel :</strong> Engagement sur l&apos;année scolaire (10 mois). Non résiliable avant la fin de la période. À l&apos;expiration, vous pouvez renouveler ou passer en mensuel.</li>
+          <li><strong>Abonnement Annuel :</strong> Engagement sur 12 mois, paiement en une fois (49,99€). Non résiliable avant la fin de la période. À l&apos;expiration, vous pouvez renouveler ou passer en mensuel.</li>
         </ul>
         <p>
           Aucun renouvellement n&apos;est effectué sans votre consentement explicite à l&apos;issue d&apos;un abonnement annuel.
@@ -105,7 +105,7 @@ const sections = [
       <>
         <ul>
           <li><strong>Mensuel :</strong> Résiliable à tout moment depuis la page Abonnement de votre compte. L&apos;accès reste actif jusqu&apos;à la fin du mois en cours.</li>
-          <li><strong>Annuel :</strong> L&apos;engagement court sur l&apos;année scolaire (10 mois). La résiliation anticipée n&apos;est pas possible. L&apos;accès reste actif jusqu&apos;à la fin de la période.</li>
+          <li><strong>Annuel :</strong> L&apos;engagement court sur 12 mois. La résiliation anticipée n&apos;est pas possible. L&apos;accès reste actif jusqu&apos;à la fin de la période.</li>
           <li><strong>Essai gratuit :</strong> Si vous ne souscrivez pas d&apos;abonnement à la fin de l&apos;essai, votre compte reste actif mais l&apos;accès aux fonctionnalités est suspendu.</li>
         </ul>
       </>

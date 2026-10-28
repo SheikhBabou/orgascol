@@ -125,7 +125,7 @@ export default function SubscriptionPage() {
 
   const statusInfo = getStatusLabel(sub.status);
   const trialDays = daysUntil(sub.trialEnd);
-  const price = sub.plan === "annuel" ? "9,99" : "11,99";
+  const price = sub.plan === "annuel" ? "49,99" : "5,99";
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -176,7 +176,7 @@ export default function SubscriptionPage() {
 
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold">{price}€</span>
-          <span className="text-muted">/mois</span>
+          <span className="text-muted">{sub.plan === "annuel" ? "/an" : "/mois"}</span>
           <span className="ml-2 px-2.5 py-0.5 rounded-full bg-primary-light text-primary text-xs font-semibold capitalize">
             {sub.plan === "annuel" ? "Annuel" : "Mensuel"}
           </span>
@@ -184,7 +184,7 @@ export default function SubscriptionPage() {
 
         {sub.plan === "annuel" && (
           <p className="text-xs text-muted">
-            99,90€ l&apos;année scolaire (10 mois) - paiement mensuel ou en une fois
+            49,99€/an - paiement en une fois, soit 4,17€/mois
           </p>
         )}
 
@@ -314,7 +314,7 @@ export default function SubscriptionPage() {
             <div className="flex items-center justify-between p-4 rounded-xl bg-background border border-border">
               <div>
                 <p className="text-sm font-medium">Passer au plan Annuel</p>
-                <p className="text-xs text-muted">Économise 17% - 9,99€/mois au lieu de 11,99€</p>
+                <p className="text-xs text-muted">Économise 30% - 49,99€/an au lieu de 71,88€</p>
               </div>
               <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors btn-press">
                 Changer
