@@ -19,7 +19,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const events = await ical.async.fromURL(url);
+    let events;
+    try {
+      events = await ical.async.fromURL(url);
+    } catch (fetchErr: unknown) {
+      const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+      if (msg.includes("500") || msg.includes("Internal Server")) {
+        return NextResponse.json(
+          { error: "Le serveur du calendrier a renvoyé une erreur. Vérifie que l'URL est complète (avec le bon identifiant de groupe/formation)." },
+          { status: 422 }
+        );
+      }
+      throw fetchErr;
+    }
     const slotsMap = new Map<string, ParsedSlot>();
 
     for (const key of Object.keys(events)) {
