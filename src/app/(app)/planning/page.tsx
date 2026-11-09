@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CheckCircle2, SkipForward, CalendarDays, BookOpen, Clock, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { CheckCircle2, CalendarClock, CalendarDays, BookOpen, Clock, ChevronLeft, ChevronRight, X, Undo2, ThumbsUp } from "lucide-react";
 import { format, parseISO, isToday, addDays, startOfWeek, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { generatePlanning } from "@/utils/planning";
@@ -34,6 +34,7 @@ export default function PlanningPage() {
   const [hasSchedule, setHasSchedule] = useState(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [popover, setPopover] = useState<{ session: RevisionSession; x: number; y: number } | null>(null);
+  const [showThumbsUp, setShowThumbsUp] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -126,6 +127,9 @@ export default function PlanningPage() {
       .eq("id", id);
 
     if (status === "completed") {
+      setShowThumbsUp(true);
+      setTimeout(() => setShowThumbsUp(false), 1500);
+
       const session = sessions.find((s) => s.id === id);
       if (session?.chapter_id) {
         const others = sessions.filter(
@@ -141,12 +145,137 @@ export default function PlanningPage() {
       }
     }
 
+    if (status === "pending") {
+      const session = sessions.find((s) => s.id === id);
+      if (session?.chapter_id) {
+        await supabase
+          .from("chapters")
+          .update({ status: "in_progress" })
+          .eq("id", session.chapter_id);
+      }
+    }
+
     const { data } = await supabase
       .from("revision_sessions")
       .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
       .order("scheduled_date")
       .order("start_time");
     if (data) setSessions(data);
+    setPopover(null);
+  }
+
+  async function postponeSession(id: string) {
+    const session = sessions.find((s) => s.id === id);
+    if (!session) return;
+
+    const { data: slots } = await supabase.from("schedule_slots").select("*");
+    const scheduleSlots: ScheduleSlot[] = slots ?? [];
+
+    const sessionDuration = (() => {
+      const [sh, sm] = session.start_time.split(":").map(Number);
+      const [eh, em] = session.end_time.split(":").map(Number);
+      return (eh * 60 + em) - (sh * 60 + sm);
+    })();
+
+    const bookedKeys = new Set(
+      sessions
+        .filter((s) => s.id !== id && s.status !== "completed")
+        .map((s) => `${s.scheduled_date}-${s.start_time}`)
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let searchDate = addDays(parseISO(session.scheduled_date), 1);
+
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const dayOfWeek = (searchDate.getDay() + 6) % 7;
+      const dateStr = format(searchDate, "yyyy-MM-dd");
+      const isSunday = dayOfWeek === 6;
+      const dayStart = isSunday ? 19 * 60 : 8 * 60;
+      const dayEnd = isSunday ? 22 * 60 : 22 * 60;
+
+      const classBlocks = scheduleSlots
+        .filter((s) => s.day_of_week === dayOfWeek)
+        .map((s) => {
+          const [sh, sm] = s.start_time.split(":").map(Number);
+          const [eh, em] = s.end_time.split(":").map(Number);
+          return { start: sh * 60 + sm, end: eh * 60 + em };
+        })
+        .sort((a, b) => a.start - b.start);
+
+      const revBlocks = sessions
+        .filter((s) => s.id !== id && s.scheduled_date === dateStr && s.status !== "completed")
+        .map((s) => {
+          const [sh, sm] = s.start_time.split(":").map(Number);
+          const [eh, em] = s.end_time.split(":").map(Number);
+          return { start: sh * 60 + sm, end: eh * 60 + em };
+        });
+
+      const occupied = [...classBlocks, ...revBlocks].sort((a, b) => a.start - b.start);
+      const merged: { start: number; end: number }[] = [];
+      for (const block of occupied) {
+        if (merged.length > 0 && block.start <= merged[merged.length - 1].end) {
+          merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, block.end);
+        } else {
+          merged.push({ ...block });
+        }
+      }
+
+      let cursor = dayStart;
+      for (const block of merged) {
+        if (block.start - cursor >= sessionDuration) {
+          const startH = Math.floor(cursor / 60);
+          const startM = cursor % 60;
+          const endCursor = cursor + sessionDuration;
+          const endH = Math.floor(endCursor / 60);
+          const endM = endCursor % 60;
+          const newStart = `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`;
+          const newEnd = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+
+          await supabase
+            .from("revision_sessions")
+            .update({ scheduled_date: dateStr, start_time: newStart, end_time: newEnd })
+            .eq("id", id);
+
+          const { data } = await supabase
+            .from("revision_sessions")
+            .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
+            .order("scheduled_date")
+            .order("start_time");
+          if (data) setSessions(data);
+          setPopover(null);
+          return;
+        }
+        cursor = Math.max(cursor, block.end);
+      }
+
+      if (dayEnd - cursor >= sessionDuration) {
+        const startH = Math.floor(cursor / 60);
+        const startM = cursor % 60;
+        const endCursor = cursor + sessionDuration;
+        const endH = Math.floor(endCursor / 60);
+        const endM = endCursor % 60;
+        const newStart = `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`;
+        const newEnd = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+
+        await supabase
+          .from("revision_sessions")
+          .update({ scheduled_date: dateStr, start_time: newStart, end_time: newEnd })
+          .eq("id", id);
+
+        const { data } = await supabase
+          .from("revision_sessions")
+          .select("*, chapter:chapters(*, exam:exams(*, subject:subjects(*)))")
+          .order("scheduled_date")
+          .order("start_time");
+        if (data) setSessions(data);
+        setPopover(null);
+        return;
+      }
+
+      searchDate = addDays(searchDate, 1);
+    }
+
     setPopover(null);
   }
 
@@ -430,6 +559,17 @@ export default function PlanningPage() {
         </div>
       </div>
 
+      {/* Thumbs up animation */}
+      {showThumbsUp && (
+        <div className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
+          <div className="animate-bounce">
+            <div className="bg-success/20 rounded-full p-8">
+              <ThumbsUp className="w-20 h-20 text-success" strokeWidth={2.5} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Popover */}
       {popover && (
         <>
@@ -479,25 +619,32 @@ export default function PlanningPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => updateStatus(popover.session.id, "completed")}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-lg text-xs font-medium hover:bg-success/20 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-success/10 text-success rounded-lg text-sm font-medium hover:bg-success/20 transition-colors"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Fait
+                  <CheckCircle2 className="w-4 h-4" />
+                  Fait !
                 </button>
                 <button
-                  onClick={() => updateStatus(popover.session.id, "skipped")}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning rounded-lg text-xs font-medium hover:bg-warning/20 transition-colors"
+                  onClick={() => postponeSession(popover.session.id)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors"
                 >
-                  <SkipForward className="w-3.5 h-3.5" />
-                  Passer
+                  <CalendarClock className="w-4 h-4" />
+                  Reporter
                 </button>
               </div>
             ) : (
-              <p className={`text-xs font-medium text-center py-1.5 rounded-lg ${
-                popover.session.status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-              }`}>
-                {popover.session.status === "completed" ? "Terminée" : "Passée"}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="flex-1 text-xs font-medium text-center py-1.5 rounded-lg bg-success/10 text-success">
+                  Terminée
+                </p>
+                <button
+                  onClick={() => updateStatus(popover.session.id, "pending")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-medium text-muted hover:text-foreground hover:border-primary/30 transition-colors"
+                >
+                  <Undo2 className="w-3.5 h-3.5" />
+                  Annuler
+                </button>
+              </div>
             )}
           </div>
         </>
