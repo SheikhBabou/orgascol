@@ -158,7 +158,8 @@ function gradeWeight(subjectAvg: number | undefined): number {
 export function generatePlanning(
   exams: ExamWithDetails[],
   scheduleSlots: ScheduleSlot[],
-  subjectAverages?: Map<string, number>
+  subjectAverages?: Map<string, number>,
+  occupiedSlots?: { date: string; start_time: string; end_time: string }[]
 ): GeneratedSession[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -179,6 +180,10 @@ export function generatePlanning(
     scheduleSlots,
     addDays(today, 1),
     lastExamDate
+  );
+
+  const preOccupied = new Set(
+    (occupiedSlots ?? []).map((s) => `${s.date}-${s.start_time}`)
   );
 
   const chaptersToSchedule: {
@@ -208,7 +213,7 @@ export function generatePlanning(
   chaptersToSchedule.sort((a, b) => b.urgency - a.urgency);
 
   const sessions: GeneratedSession[] = [];
-  const usedSlots = new Set<string>();
+  const usedSlots = new Set<string>(preOccupied);
   const chapterSessionCount = new Map<string, number>();
 
   for (const { chapter, exam, weight } of chaptersToSchedule) {

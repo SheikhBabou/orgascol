@@ -83,13 +83,21 @@ export default function PlanningPage() {
         .from("revision_sessions")
         .select("chapter_id, scheduled_date, start_time, status");
 
-      const doneKeys = new Set(
-        (existingSessions ?? [])
-          .filter((s) => s.status === "completed" || s.status === "skipped")
-          .map((s) => `${s.chapter_id}-${s.scheduled_date}-${s.start_time}`)
+      const completedOrSkipped = (existingSessions ?? []).filter(
+        (s) => s.status === "completed" || s.status === "skipped"
       );
 
-      const newSessions = generatePlanning(exams, slots, subjectAverages)
+      const doneKeys = new Set(
+        completedOrSkipped.map((s) => `${s.chapter_id}-${s.scheduled_date}-${s.start_time}`)
+      );
+
+      const occupiedSlots = completedOrSkipped.map((s) => ({
+        date: s.scheduled_date,
+        start_time: s.start_time,
+        end_time: s.start_time,
+      }));
+
+      const newSessions = generatePlanning(exams, slots, subjectAverages, occupiedSlots)
         .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time}`))
         .map((s) => ({
           ...s,
@@ -502,14 +510,34 @@ export default function PlanningPage() {
                 })()}
 
                 {/* Sessions */}
-                {daySessions.map((session) => {
-                  const [sh, sm] = session.start_time.split(":").map(Number);
-                  const [eh, em] = session.end_time.split(":").map(Number);
-                  const startMin = sh * 60 + sm - GRID_START * 60;
-                  const endMin = eh * 60 + em - GRID_START * 60;
+                {(() => {
+                  const parsed = daySessions.map((session) => {
+                    const [sh, sm] = session.start_time.split(":").map(Number);
+                    const [eh, em] = session.end_time.split(":").map(Number);
+                    return { session, startMin: sh * 60 + sm - GRID_START * 60, endMin: eh * 60 + em - GRID_START * 60 };
+                  });
+                  const layout: { col: number; totalCols: number }[] = parsed.map(() => ({ col: 0, totalCols: 1 }));
+                  for (let i = 0; i < parsed.length; i++) {
+                    const group = [i];
+                    for (let j = i + 1; j < parsed.length; j++) {
+                      if (parsed[j].startMin < parsed[i].endMin && parsed[j].endMin > parsed[i].startMin) {
+                        group.push(j);
+                      }
+                    }
+                    if (group.length > 1) {
+                      for (let g = 0; g < group.length; g++) {
+                        layout[group[g]].col = g;
+                        layout[group[g]].totalCols = Math.max(layout[group[g]].totalCols, group.length);
+                      }
+                    }
+                  }
+                  return parsed.map(({ session, startMin, endMin }, idx) => {
                   const color = session.chapter?.exam?.subject?.color ?? "#6366f1";
                   const isDone = session.status === "completed";
                   const isSkipped = session.status === "skipped";
+                  const { col, totalCols } = layout[idx];
+                  const widthPct = 100 / totalCols;
+                  const leftPct = col * widthPct;
 
                   return (
                     <button
@@ -523,12 +551,14 @@ export default function PlanningPage() {
                           y: rect.top,
                         });
                       }}
-                      className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
+                      className={`absolute rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
                         popover?.session.id === session.id ? "ring-2 ring-primary" : ""
                       } ${isDone ? "opacity-50" : isSkipped ? "opacity-30" : ""}`}
                       style={{
                         top: startMin * PX_PER_MIN,
                         height: Math.max((endMin - startMin) * PX_PER_MIN, 24),
+                        left: `calc(${leftPct}% + 2px)`,
+                        width: `calc(${widthPct}% - 4px)`,
                         backgroundColor: `${color}18`,
                         borderColor: isDone ? "#22c55e40" : `${color}40`,
                         color,
@@ -552,7 +582,8 @@ export default function PlanningPage() {
                       )}
                     </button>
                   );
-                })}
+                  });
+                })()}
               </div>
             );
           })}

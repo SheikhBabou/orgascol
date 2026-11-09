@@ -650,12 +650,33 @@ export default function SchedulePage() {
                   )}
 
                   {/* Slots */}
-                  {slotsByDay[dayIndex].map((slot) => {
-                    const [sh, sm] = slot.start_time.split(":").map(Number);
-                    const [eh, em] = slot.end_time.split(":").map(Number);
-                    const startMin = sh * 60 + sm - gridStart * 60;
-                    const endMin = eh * 60 + em - gridStart * 60;
+                  {(() => {
+                    const daySlots = slotsByDay[dayIndex];
+                    const parsed = daySlots.map((slot) => {
+                      const [sh, sm] = slot.start_time.split(":").map(Number);
+                      const [eh, em] = slot.end_time.split(":").map(Number);
+                      return { slot, startMin: sh * 60 + sm - gridStart * 60, endMin: eh * 60 + em - gridStart * 60 };
+                    });
+                    const layout = parsed.map(() => ({ col: 0, totalCols: 1 }));
+                    for (let i = 0; i < parsed.length; i++) {
+                      const group = [i];
+                      for (let j = i + 1; j < parsed.length; j++) {
+                        if (parsed[j].startMin < parsed[i].endMin && parsed[j].endMin > parsed[i].startMin) {
+                          group.push(j);
+                        }
+                      }
+                      if (group.length > 1) {
+                        for (let g = 0; g < group.length; g++) {
+                          layout[group[g]].col = g;
+                          layout[group[g]].totalCols = Math.max(layout[group[g]].totalCols, group.length);
+                        }
+                      }
+                    }
+                    return parsed.map(({ slot, startMin, endMin }, idx) => {
                     const color = slot.label ? subjectColorMap.get(slot.label) : undefined;
+                    const { col, totalCols } = layout[idx];
+                    const widthPct = 100 / totalCols;
+                    const leftPct = col * widthPct;
 
                     return (
                       <button
@@ -670,12 +691,14 @@ export default function SchedulePage() {
                           });
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
-                        className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
+                        className={`absolute rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
                           color ? "" : SLOT_COLOR
                         } ${popover?.slot.id === slot.id ? "ring-2 ring-primary" : ""}`}
                         style={{
                           top: startMin * PX_PER_MIN,
                           height: Math.max((endMin - startMin) * PX_PER_MIN, 24),
+                          left: `calc(${leftPct}% + 2px)`,
+                          width: `calc(${widthPct}% - 4px)`,
                           ...(color ? {
                             backgroundColor: `${color}18`,
                             borderColor: `${color}40`,
@@ -694,7 +717,8 @@ export default function SchedulePage() {
                         </p>
                       </button>
                     );
-                  })}
+                    });
+                  })()}
                 </div>
               ))}
             </div>
