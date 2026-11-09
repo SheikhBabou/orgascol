@@ -88,17 +88,17 @@ export default function PlanningPage() {
       );
 
       const doneKeys = new Set(
-        completedOrSkipped.map((s) => `${s.chapter_id}-${s.scheduled_date}-${s.start_time}`)
+        completedOrSkipped.map((s) => `${s.chapter_id}-${s.scheduled_date}-${s.start_time.slice(0, 5)}`)
       );
 
       const occupiedSlots = completedOrSkipped.map((s) => ({
         date: s.scheduled_date,
-        start_time: s.start_time,
-        end_time: s.start_time,
+        start_time: s.start_time.slice(0, 5),
+        end_time: s.start_time.slice(0, 5),
       }));
 
       const newSessions = generatePlanning(exams, slots, subjectAverages, occupiedSlots)
-        .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time}`))
+        .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time.slice(0, 5)}`))
         .map((s) => ({
           ...s,
           user_id: userId,
