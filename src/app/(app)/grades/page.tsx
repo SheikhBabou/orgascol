@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Trash2 } from "lucide-react";
-import type { Subject, Grade } from "@/types/database";
+import type { Subject, Grade, Exam, Project } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
 
 export default function GradesPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const supabase = createClient();
@@ -26,14 +28,25 @@ export default function GradesPage() {
   }, []);
 
   async function loadData() {
-    const [subjectsRes, gradesRes] = await Promise.all([
+    const [subjectsRes, gradesRes, examsRes, projectsRes] = await Promise.all([
       supabase.from("subjects").select("*").order("ue_name").order("name"),
       supabase.from("grades").select("*, subject:subjects(*)").order("created_at", { ascending: false }),
+      supabase.from("exams").select("*").order("exam_date"),
+      supabase.from("projects").select("*").order("end_date"),
     ]);
     if (subjectsRes.data) setSubjects(subjectsRes.data);
     if (gradesRes.data) setGrades(gradesRes.data);
+    if (examsRes.data) setExams(examsRes.data);
+    if (projectsRes.data) setProjects(projectsRes.data);
     setLoading(false);
   }
+
+  const subjectExams = subjectId
+    ? [
+        ...exams.filter((e) => e.subject_id === subjectId).map((e) => ({ label: e.title, type: "Examen" })),
+        ...projects.filter((p) => p.subject_id === subjectId).map((p) => ({ label: p.title, type: "Projet" })),
+      ]
+    : [];
 
   async function handleAddGrade(e: React.FormEvent) {
     e.preventDefault();
@@ -85,9 +98,7 @@ export default function GradesPage() {
     const averages: { avg: number; ects: number }[] = [];
     for (const s of ueSubjects) {
       const avg = getSubjectAverage(s.id);
-      if (avg !== null) {
-        averages.push({ avg, ects: s.ects || 1 });
-      }
+      if (avg !== null) averages.push({ avg, ects: s.ects || 1 });
     }
     if (averages.length === 0) return null;
     const totalWeighted = averages.reduce((sum, a) => sum + a.avg * a.ects, 0);
@@ -99,9 +110,7 @@ export default function GradesPage() {
     const averages: { avg: number; ects: number }[] = [];
     for (const s of subjects) {
       const avg = getSubjectAverage(s.id);
-      if (avg !== null) {
-        averages.push({ avg, ects: s.ects || 1 });
-      }
+      if (avg !== null) averages.push({ avg, ects: s.ects || 1 });
     }
     if (averages.length === 0) return null;
     const totalWeighted = averages.reduce((sum, a) => sum + a.avg * a.ects, 0);
@@ -151,10 +160,7 @@ export default function GradesPage() {
 
       {/* Add grade form */}
       {showForm && (
-        <form
-          onSubmit={handleAddGrade}
-          className="bg-card-bg border border-border rounded-xl p-6 space-y-4"
-        >
+        <form onSubmit={handleAddGrade} className="bg-card-bg border border-border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">Nouvelle note</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -162,7 +168,7 @@ export default function GradesPage() {
               <select
                 required
                 value={subjectId}
-                onChange={(e) => setSubjectId(e.target.value)}
+                onChange={(e) => { setSubjectId(e.target.value); setGradeTitle(""); }}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
                 <option value="">Choisir une matière</option>
@@ -174,21 +180,45 @@ export default function GradesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">
-                Intitulé *
-              </label>
-              <input
-                required
-                value={gradeTitle}
-                onChange={(e) => setGradeTitle(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ex: CC1, Exam final, TP2..."
-              />
+              <label className="block text-sm font-medium mb-1.5">Examen / Projet *</label>
+              {subjectExams.length > 0 && !gradeTitle.startsWith("__") ? (
+                <>
+                  <select
+                    required
+                    value={gradeTitle}
+                    onChange={(e) => setGradeTitle(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="">Choisir l&apos;évaluation</option>
+                    {subjectExams.map((item) => (
+                      <option key={`${item.type}-${item.label}`} value={item.label}>
+                        {item.label} ({item.type})
+                      </option>
+                    ))}
+                  </select>
+                  <button type="button" onClick={() => setGradeTitle("__custom__")} className="text-xs text-primary hover:underline mt-1">
+                    Saisie libre
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    required
+                    value={gradeTitle.startsWith("__") ? "" : gradeTitle}
+                    onChange={(e) => setGradeTitle(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder={subjectId ? "Ex: CC1, Partiel, TP3..." : "Sélectionne d'abord une matière"}
+                  />
+                  {subjectExams.length > 0 && (
+                    <button type="button" onClick={() => setGradeTitle("")} className="text-xs text-primary hover:underline mt-1">
+                      Choisir depuis mes examens
+                    </button>
+                  )}
+                </>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">
-                Note *
-              </label>
+              <label className="block text-sm font-medium mb-1.5">Note *</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -213,9 +243,7 @@ export default function GradesPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5">
-                Coefficient
-              </label>
+              <label className="block text-sm font-medium mb-1.5">Coefficient</label>
               <input
                 type="number"
                 step="0.1"
@@ -227,18 +255,10 @@ export default function GradesPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
-            >
+            <button type="submit" disabled={saving || !gradeTitle || gradeTitle.startsWith("__")} className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm disabled:opacity-50">
               {saving ? "Enregistrement..." : "Enregistrer"}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-6 py-2 border border-border rounded-lg text-sm hover:bg-background transition-colors"
-            >
+            <button type="button" onClick={() => setShowForm(false)} className="px-6 py-2 border border-border rounded-lg text-sm hover:bg-background transition-colors">
               Annuler
             </button>
           </div>
@@ -260,99 +280,23 @@ export default function GradesPage() {
               </span>
             </div>
             <div className="divide-y divide-border">
-              {ueSubjects.map((subject) => {
-                const subjectGrades = grades.filter((g) => g.subject_id === subject.id);
-                const avg = getSubjectAverage(subject.id);
-                return (
-                  <div key={subject.id} className="px-6 py-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: subject.color }} />
-                        <span className="text-sm font-medium">{subject.name}</span>
-                        {subject.ects > 0 && (
-                          <span className="text-xs text-muted">({subject.ects} ECTS)</span>
-                        )}
-                      </div>
-                      <span className={`text-sm font-bold ${
-                        avg !== null && avg >= 10 ? "text-success" : avg !== null ? "text-danger" : "text-muted"
-                      }`}>
-                        {avg !== null ? avg.toFixed(2) : "-"}/20
-                      </span>
-                    </div>
-                    {subjectGrades.length > 0 && (
-                      <div className="ml-4 space-y-1">
-                        {subjectGrades.map((g) => (
-                          <div key={g.id} className="flex items-center justify-between text-xs text-muted">
-                            <span>{g.title} (coeff {g.coefficient})</span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-foreground">
-                                {g.grade}/{g.max_grade}
-                              </span>
-                              <button
-                                onClick={() => setDeleteTarget({ id: g.id, name: g.title })}
-                                className="opacity-50 hover:opacity-100 text-danger"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {ueSubjects.map((subject) => (
+                <SubjectGrades key={subject.id} subject={subject} grades={grades} onDelete={setDeleteTarget} />
+              ))}
             </div>
           </div>
         );
       })}
 
-      {/* Subjects without UE */}
       {subjectsWithoutUE.length > 0 && (
         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-border bg-background/50">
             <h2 className="font-semibold">Autres matières</h2>
           </div>
           <div className="divide-y divide-border">
-            {subjectsWithoutUE.map((subject) => {
-              const subjectGrades = grades.filter((g) => g.subject_id === subject.id);
-              const avg = getSubjectAverage(subject.id);
-              return (
-                <div key={subject.id} className="px-6 py-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: subject.color }} />
-                      <span className="text-sm font-medium">{subject.name}</span>
-                    </div>
-                    <span className={`text-sm font-bold ${
-                      avg !== null && avg >= 10 ? "text-success" : avg !== null ? "text-danger" : "text-muted"
-                    }`}>
-                      {avg !== null ? avg.toFixed(2) : "-"}/20
-                    </span>
-                  </div>
-                  {subjectGrades.length > 0 && (
-                    <div className="ml-4 space-y-1">
-                      {subjectGrades.map((g) => (
-                        <div key={g.id} className="flex items-center justify-between text-xs text-muted">
-                          <span>{g.title} (coeff {g.coefficient})</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground">
-                              {g.grade}/{g.max_grade}
-                            </span>
-                            <button
-                              onClick={() => setDeleteTarget({ id: g.id, name: g.title })}
-                              className="opacity-50 hover:opacity-100 text-danger"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {subjectsWithoutUE.map((subject) => (
+              <SubjectGrades key={subject.id} subject={subject} grades={grades} onDelete={setDeleteTarget} />
+            ))}
           </div>
         </div>
       )}
@@ -372,6 +316,59 @@ export default function GradesPage() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+    </div>
+  );
+}
+
+function SubjectGrades({
+  subject,
+  grades,
+  onDelete,
+}: {
+  subject: Subject;
+  grades: Grade[];
+  onDelete: (t: { id: string; name: string }) => void;
+}) {
+  const subjectGrades = grades.filter((g) => g.subject_id === subject.id);
+  let avg: number | null = null;
+  if (subjectGrades.length > 0) {
+    let tw = 0, tc = 0;
+    for (const g of subjectGrades) {
+      tw += (g.grade / g.max_grade) * 20 * g.coefficient;
+      tc += g.coefficient;
+    }
+    avg = tc > 0 ? tw / tc : null;
+  }
+
+  return (
+    <div className="px-6 py-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: subject.color }} />
+          <span className="text-sm font-medium">{subject.name}</span>
+          {subject.ects > 0 && <span className="text-xs text-muted">({subject.ects} ECTS)</span>}
+        </div>
+        <span className={`text-sm font-bold ${
+          avg !== null && avg >= 10 ? "text-success" : avg !== null ? "text-danger" : "text-muted"
+        }`}>
+          {avg !== null ? avg.toFixed(2) : "-"}/20
+        </span>
+      </div>
+      {subjectGrades.length > 0 && (
+        <div className="ml-4 space-y-1">
+          {subjectGrades.map((g) => (
+            <div key={g.id} className="flex items-center justify-between text-xs text-muted">
+              <span>{g.title} (coeff {g.coefficient})</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground">{g.grade}/{g.max_grade}</span>
+                <button onClick={() => onDelete({ id: g.id, name: g.title })} className="opacity-50 hover:opacity-100 text-danger">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

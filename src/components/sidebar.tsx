@@ -13,7 +13,6 @@ import {
   X,
   Layers,
   Calculator,
-  FolderOpen,
   Settings,
   CreditCard,
 } from "lucide-react";
@@ -24,8 +23,7 @@ import { useRouter } from "next/navigation";
 const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Matières", href: "/subjects", icon: Layers },
-  { name: "Examens", href: "/exams", icon: BookOpen },
-  { name: "Projets", href: "/projects", icon: FolderOpen },
+  { name: "Examens & Projets", href: "/exams", icon: BookOpen },
   { name: "Emploi du temps", href: "/schedule", icon: Calendar },
   { name: "Planning de révision", href: "/planning", icon: ClipboardList },
   { name: "Notes & Moyennes", href: "/grades", icon: Calculator },
