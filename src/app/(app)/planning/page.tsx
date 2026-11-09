@@ -1,35 +1,40 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CheckCircle2, SkipForward, CalendarDays, BookOpen, Clock, ChevronDown, ChevronUp } from "lucide-react";
-import { format, parseISO, isToday, isTomorrow, differenceInDays } from "date-fns";
+import { CheckCircle2, SkipForward, CalendarDays, BookOpen, Clock, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { format, parseISO, isToday, addDays, startOfWeek, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { generatePlanning } from "@/utils/planning";
 import type { Exam, ScheduleSlot, RevisionSession, SessionStatus } from "@/types/database";
 import Link from "next/link";
 
-function formatDateLabel(dateStr: string): string {
-  const d = parseISO(dateStr);
-  if (isToday(d)) return "Aujourd'hui";
-  if (isTomorrow(d)) return "Demain";
-  return format(d, "EEEE d MMMM", { locale: fr });
+const GRID_START = 7;
+const GRID_END = 22;
+const TOTAL_MINUTES = (GRID_END - GRID_START) * 60;
+const PX_PER_MIN = 0.7;
+
+function fmt(totalMin: number): string {
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function daysUntilLabel(dateStr: string): string {
-  const days = differenceInDays(parseISO(dateStr), new Date());
-  if (days <= 0) return "Aujourd'hui";
-  if (days === 1) return "Demain";
-  return `J-${days}`;
-}
+const METHOD_LABELS: Record<string, string> = {
+  first_read: "1re lecture",
+  active_review: "Révision active",
+  spaced_repetition: "Rép. espacée",
+  final_review: "Relecture finale",
+};
 
 export default function PlanningPage() {
   const [sessions, setSessions] = useState<RevisionSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasExams, setHasExams] = useState(false);
   const [hasSchedule, setHasSchedule] = useState(false);
-  const [view, setView] = useState<"agenda" | "exams">("agenda");
-  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [popover, setPopover] = useState<{ session: RevisionSession; x: number; y: number } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   const autoGenerate = useCallback(async () => {
@@ -126,15 +131,7 @@ export default function PlanningPage() {
       .order("scheduled_date")
       .order("start_time");
     if (data) setSessions(data);
-  }
-
-  function toggleDate(date: string) {
-    setCollapsedDates((prev) => {
-      const next = new Set(prev);
-      if (next.has(date)) next.delete(date);
-      else next.add(date);
-      return next;
-    });
+    setPopover(null);
   }
 
   if (loading) {
@@ -214,32 +211,20 @@ export default function PlanningPage() {
     );
   }
 
-  const pending = sessions.filter((s) => s.status === "pending");
   const completed = sessions.filter((s) => s.status === "completed");
+  const pending = sessions.filter((s) => s.status === "pending");
   const pct = sessions.length > 0 ? Math.round((completed.length / sessions.length) * 100) : 0;
 
-  const todaySessions = sessions.filter(
-    (s) => isToday(parseISO(s.scheduled_date)) && s.status === "pending"
-  );
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekDayStrs = weekDays.map((d) => format(d, "yyyy-MM-dd"));
 
-  const sessionsByDate = pending.reduce(
-    (acc, s) => {
-      const date = s.scheduled_date;
-      if (!acc[date]) acc[date] = [];
-      acc[date].push(s);
-      return acc;
-    },
-    {} as Record<string, RevisionSession[]>
-  );
-  const dates = Object.keys(sessionsByDate).sort();
-
-  const examMap = new Map<string, { exam: Exam & { subject?: { name: string; color: string } }; sessions: RevisionSession[] }>();
+  const sessionsByDate: Record<string, RevisionSession[]> = {};
   for (const s of sessions) {
-    const exam = s.chapter?.exam;
-    if (!exam) continue;
-    if (!examMap.has(exam.id)) examMap.set(exam.id, { exam: exam as Exam & { subject?: { name: string; color: string } }, sessions: [] });
-    examMap.get(exam.id)!.sessions.push(s);
+    if (!sessionsByDate[s.scheduled_date]) sessionsByDate[s.scheduled_date] = [];
+    sessionsByDate[s.scheduled_date].push(s);
   }
+
+  const weekLabel = `${format(weekDays[0], "d MMM", { locale: fr })} - ${format(weekDays[6], "d MMM yyyy", { locale: fr })}`;
 
   return (
     <div className="space-y-6">
@@ -247,26 +232,29 @@ export default function PlanningPage() {
         <div>
           <h1 className="text-2xl font-bold">Planning de révisions</h1>
           <p className="text-muted text-sm mt-1">
-            Généré automatiquement - {pending.length} session{pending.length > 1 ? "s" : ""} restante{pending.length > 1 ? "s" : ""}
+            {pending.length} session{pending.length > 1 ? "s" : ""} restante{pending.length > 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex bg-background border border-border rounded-lg p-0.5">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setView("agenda")}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              view === "agenda" ? "bg-primary text-white" : "text-muted hover:text-foreground"
-            }`}
+            onClick={() => setWeekStart((w) => addDays(w, -7))}
+            className="p-2 border border-border rounded-lg hover:bg-background transition-colors"
           >
-            Agenda
+            <ChevronLeft className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setView("exams")}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              view === "exams" ? "bg-primary text-white" : "text-muted hover:text-foreground"
-            }`}
+            onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+            className="px-3 py-1.5 border border-border rounded-lg text-xs font-medium hover:bg-background transition-colors"
           >
-            Par examen
+            Cette semaine
           </button>
+          <button
+            onClick={() => setWeekStart((w) => addDays(w, 7))}
+            className="p-2 border border-border rounded-lg hover:bg-background transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <span className="text-sm font-medium text-muted ml-2 hidden md:inline capitalize">{weekLabel}</span>
         </div>
       </div>
 
@@ -288,159 +276,216 @@ export default function PlanningPage() {
         </div>
       </div>
 
-      {/* Today highlight */}
-      {todaySessions.length > 0 && (
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-primary flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" />
-            Aujourd&apos;hui - {todaySessions.length} session{todaySessions.length > 1 ? "s" : ""}
-          </h2>
-          {todaySessions.map((s) => (
-            <SessionCard key={s.id} session={s} onStatus={updateStatus} />
-          ))}
-        </div>
-      )}
+      {/* Timeline grid */}
+      <div className="bg-card-bg border border-border rounded-xl overflow-x-auto" ref={gridRef}>
+        <div className="grid min-w-[700px]" style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}>
+          {/* Header */}
+          <div className="border-b border-border bg-background/50 px-1 py-2" />
+          {weekDays.map((day, i) => {
+            const dateStr = weekDayStrs[i];
+            const daySessionCount = (sessionsByDate[dateStr] ?? []).filter((s) => s.status === "pending").length;
+            const today = isToday(day);
+            return (
+              <div
+                key={i}
+                className={`border-b border-l border-border px-2 py-2 text-center ${today ? "bg-primary/5" : "bg-background/50"}`}
+              >
+                <p className={`text-[10px] uppercase tracking-wider ${today ? "text-primary font-bold" : "text-muted"}`}>
+                  {format(day, "EEE", { locale: fr })}
+                </p>
+                <p className={`text-sm font-semibold ${today ? "text-primary" : ""}`}>
+                  {format(day, "d")}
+                </p>
+                {daySessionCount > 0 && (
+                  <span className="inline-block mt-0.5 text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                    {daySessionCount}
+                  </span>
+                )}
+              </div>
+            );
+          })}
 
-      {view === "agenda" ? (
-        /* Agenda view */
-        dates.length === 0 ? (
-          <div className="bg-card-bg border border-border rounded-xl p-8 text-center space-y-3">
-            <CheckCircle2 className="w-12 h-12 text-success mx-auto" />
-            <h2 className="text-lg font-semibold">Tout est révisé !</h2>
-            <p className="text-sm text-muted">Ajoute de nouveaux examens pour générer de nouvelles sessions.</p>
+          {/* Time column */}
+          <div className="relative" style={{ height: TOTAL_MINUTES * PX_PER_MIN }}>
+            {Array.from({ length: GRID_END - GRID_START + 1 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute right-0 left-0 flex items-start justify-end pr-1.5"
+                style={{ top: i * 60 * PX_PER_MIN }}
+              >
+                <span className="text-[10px] text-muted leading-none -translate-y-1/2">
+                  {fmt((GRID_START + i) * 60)}
+                </span>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="space-y-3">
-            {dates.map((date) => {
-              const isExpanded = !collapsedDates.has(date);
-              const daySessions = sessionsByDate[date];
-              return (
-                <div key={date} className="bg-card-bg border border-border rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => toggleDate(date)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-background/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold capitalize">{formatDateLabel(date)}</span>
-                      <span className="text-xs text-muted bg-background px-2 py-0.5 rounded-full">
-                        {daySessions.length} session{daySessions.length > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-muted" /> : <ChevronDown className="w-4 h-4 text-muted" />}
-                  </button>
-                  {isExpanded && (
-                    <div className="px-4 pb-3 space-y-2">
-                      {daySessions.map((s) => (
-                        <SessionCard key={s.id} session={s} onStatus={updateStatus} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )
-      ) : (
-        /* Exam view */
-        <div className="space-y-4">
-          {Array.from(examMap.values())
-            .sort((a, b) => a.exam.exam_date.localeCompare(b.exam.exam_date))
-            .map(({ exam, sessions: examSessions }) => {
-              const done = examSessions.filter((s) => s.status === "completed").length;
-              const total = examSessions.length;
-              const examPct = total > 0 ? Math.round((done / total) * 100) : 0;
-              const color = exam.subject?.color ?? "#6366f1";
 
-              return (
-                <div key={exam.id} className="bg-card-bg border border-border rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{exam.title}</p>
-                      <p className="text-xs text-muted">{exam.subject?.name} - {daysUntilLabel(exam.exam_date)}</p>
+          {/* Day columns */}
+          {weekDays.map((day, dayIndex) => {
+            const dateStr = weekDayStrs[dayIndex];
+            const daySessions = sessionsByDate[dateStr] ?? [];
+            const today = isToday(day);
+
+            return (
+              <div
+                key={dayIndex}
+                className={`relative border-l border-border ${today ? "bg-primary/[0.02]" : ""}`}
+                style={{ height: TOTAL_MINUTES * PX_PER_MIN }}
+              >
+                {/* Hour lines */}
+                {Array.from({ length: GRID_END - GRID_START + 1 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="absolute left-0 right-0 border-t border-border/40"
+                    style={{ top: i * 60 * PX_PER_MIN }}
+                  />
+                ))}
+
+                {/* Now indicator */}
+                {today && (() => {
+                  const now = new Date();
+                  const nowMin = now.getHours() * 60 + now.getMinutes();
+                  if (nowMin < GRID_START * 60 || nowMin > GRID_END * 60) return null;
+                  return (
+                    <div
+                      className="absolute left-0 right-0 border-t-2 border-danger z-20 pointer-events-none"
+                      style={{ top: (nowMin - GRID_START * 60) * PX_PER_MIN }}
+                    >
+                      <div className="w-2 h-2 rounded-full bg-danger -translate-y-1/2 -translate-x-1/2" />
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold" style={{ color }}>{examPct}%</p>
-                      <p className="text-[10px] text-muted">{done}/{total}</p>
-                    </div>
-                  </div>
-                  <div className="px-4 pt-2 pb-1">
-                    <div className="w-full h-1.5 bg-border/50 rounded-full overflow-hidden mb-3">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${examPct}%`, backgroundColor: color }} />
-                    </div>
-                  </div>
-                  <div className="px-4 pb-3 space-y-2">
-                    {examSessions.map((s) => (
-                      <SessionCard key={s.id} session={s} onStatus={updateStatus} compact />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })()}
+
+                {/* Sessions */}
+                {daySessions.map((session) => {
+                  const [sh, sm] = session.start_time.split(":").map(Number);
+                  const [eh, em] = session.end_time.split(":").map(Number);
+                  const startMin = sh * 60 + sm - GRID_START * 60;
+                  const endMin = eh * 60 + em - GRID_START * 60;
+                  const color = session.chapter?.exam?.subject?.color ?? "#6366f1";
+                  const isDone = session.status === "completed";
+                  const isSkipped = session.status === "skipped";
+
+                  return (
+                    <button
+                      key={session.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setPopover({
+                          session,
+                          x: rect.left + rect.width / 2,
+                          y: rect.top,
+                        });
+                      }}
+                      className={`absolute left-1 right-1 rounded-lg border text-xs p-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-primary/30 cursor-pointer z-10 ${
+                        popover?.session.id === session.id ? "ring-2 ring-primary" : ""
+                      } ${isDone ? "opacity-50" : isSkipped ? "opacity-30" : ""}`}
+                      style={{
+                        top: startMin * PX_PER_MIN,
+                        height: Math.max((endMin - startMin) * PX_PER_MIN, 24),
+                        backgroundColor: `${color}18`,
+                        borderColor: isDone ? "#22c55e40" : `${color}40`,
+                        color,
+                      }}
+                    >
+                      <p className={`font-medium truncate leading-tight ${isDone ? "line-through" : ""}`}>
+                        {session.chapter?.title}
+                      </p>
+                      <p className="leading-tight" style={{ opacity: 0.7 }}>
+                        {session.start_time.slice(0, 5)} - {session.end_time.slice(0, 5)}
+                      </p>
+                      {(endMin - startMin) * PX_PER_MIN > 50 && (
+                        <p className="leading-tight mt-0.5" style={{ opacity: 0.6, fontSize: "9px" }}>
+                          {session.chapter?.exam?.subject?.name}
+                        </p>
+                      )}
+                      {isDone && (
+                        <div className="absolute top-1 right-1">
+                          <CheckCircle2 className="w-3 h-3 text-success" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
-      )}
-    </div>
-  );
-}
-
-function SessionCard({
-  session,
-  onStatus,
-  compact,
-}: {
-  session: RevisionSession;
-  onStatus: (id: string, status: SessionStatus) => void;
-  compact?: boolean;
-}) {
-  const color = session.chapter?.exam?.subject?.color ?? "#6366f1";
-  const isDone = session.status === "completed";
-  const isSkipped = session.status === "skipped";
-
-  return (
-    <div
-      className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-        isDone
-          ? "bg-success/5 border-success/20 opacity-70"
-          : isSkipped
-            ? "bg-background border-border opacity-50"
-            : "bg-background border-border hover:border-primary/30"
-      }`}
-    >
-      <div className="w-1 self-stretch rounded-full shrink-0" style={{ backgroundColor: color }} />
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${isDone ? "line-through text-muted" : ""}`}>
-          {session.chapter?.title}
-        </p>
-        <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
-          <Clock className="w-3 h-3" />
-          {session.start_time.slice(0, 5)} - {session.end_time.slice(0, 5)}
-          {!compact && (
-            <>
-              {" "}&middot; {session.chapter?.exam?.subject?.name} &middot; {session.chapter?.exam?.title}
-            </>
-          )}
-        </p>
       </div>
-      {session.status === "pending" && (
-        <div className="flex gap-1 shrink-0">
-          <button
-            onClick={() => onStatus(session.id, "completed")}
-            className="p-1.5 rounded-lg bg-success/10 text-success hover:bg-success/20 transition-colors"
-            title="Fait"
+
+      {/* Popover */}
+      {popover && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPopover(null)} />
+          <div
+            className="fixed z-50 bg-card-bg border border-border rounded-xl shadow-lg p-4 w-80 animate-fade-in"
+            style={{
+              left: Math.min(Math.max(popover.x - 160, 12), window.innerWidth - 332),
+              top: popover.y - 10,
+              transform: "translateY(-100%)",
+            }}
           >
-            <CheckCircle2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onStatus(session.id, "skipped")}
-            className="p-1.5 rounded-lg bg-warning/10 text-warning hover:bg-warning/20 transition-colors"
-            title="Passer"
-          >
-            <SkipForward className="w-4 h-4" />
-          </button>
-        </div>
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: popover.session.chapter?.exam?.subject?.color ?? "#6366f1" }}
+                  />
+                  <h3 className="font-semibold text-sm truncate">{popover.session.chapter?.title}</h3>
+                </div>
+                <p className="text-xs text-muted mt-1">
+                  {popover.session.chapter?.exam?.subject?.name} &middot; {popover.session.chapter?.exam?.title}
+                </p>
+                <p className="text-xs text-muted mt-0.5 flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" />
+                  {format(parseISO(popover.session.scheduled_date), "EEEE d MMMM", { locale: fr })} &middot; {popover.session.start_time.slice(0, 5)} - {popover.session.end_time.slice(0, 5)}
+                </p>
+                <span
+                  className="inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full font-medium"
+                  style={{
+                    backgroundColor: `${popover.session.chapter?.exam?.subject?.color ?? "#6366f1"}15`,
+                    color: popover.session.chapter?.exam?.subject?.color ?? "#6366f1",
+                  }}
+                >
+                  {METHOD_LABELS[popover.session.method] ?? popover.session.method}
+                </span>
+              </div>
+              <button
+                onClick={() => setPopover(null)}
+                className="p-1 hover:bg-background rounded-lg transition-colors shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {popover.session.status === "pending" ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateStatus(popover.session.id, "completed")}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-success/10 text-success rounded-lg text-xs font-medium hover:bg-success/20 transition-colors"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Fait
+                </button>
+                <button
+                  onClick={() => updateStatus(popover.session.id, "skipped")}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-warning/10 text-warning rounded-lg text-xs font-medium hover:bg-warning/20 transition-colors"
+                >
+                  <SkipForward className="w-3.5 h-3.5" />
+                  Passer
+                </button>
+              </div>
+            ) : (
+              <p className={`text-xs font-medium text-center py-1.5 rounded-lg ${
+                popover.session.status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+              }`}>
+                {popover.session.status === "completed" ? "Terminée" : "Passée"}
+              </p>
+            )}
+          </div>
+        </>
       )}
-      {isDone && <span className="text-xs text-success font-medium shrink-0">Fait</span>}
-      {isSkipped && <span className="text-xs text-warning font-medium shrink-0">Passé</span>}
     </div>
   );
 }
