@@ -648,13 +648,15 @@ export default function PlanningPage() {
             </div>
             {popover.session.status === "pending" ? (
               <div className="flex gap-2">
-                <button
-                  onClick={() => updateStatus(popover.session.id, "completed")}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-success/10 text-success rounded-lg text-sm font-medium hover:bg-success/20 transition-colors"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Fait !
-                </button>
+                {popover.session.scheduled_date <= format(new Date(), "yyyy-MM-dd") && (
+                  <button
+                    onClick={() => updateStatus(popover.session.id, "completed")}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-success/10 text-success rounded-lg text-sm font-medium hover:bg-success/20 transition-colors"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Fait !
+                  </button>
+                )}
                 <button
                   onClick={() => postponeSession(popover.session.id)}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors"
