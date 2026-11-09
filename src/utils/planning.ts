@@ -34,10 +34,10 @@ interface AvailableSlot {
   duration_minutes: number;
 }
 
-const DAY_START = 8 * 60; // 08:00
-const DAY_END = 22 * 60;  // 22:00
-const MIN_SLOT = 60;       // minimum 1h pour une session
-const MAX_SLOT = 120;      // maximum 2h par session
+const DAY_START = 8 * 60;
+const DAY_END = 22 * 60;
+const MIN_SLOT = 60;
+const MAX_SLOT = 120;
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -59,7 +59,7 @@ function getAvailableSlots(
   let current = startDate;
 
   while (isBefore(current, endDate) || isEqual(current, endDate)) {
-    const dayOfWeek = (current.getDay() + 6) % 7; // 0=Mon
+    const dayOfWeek = (current.getDay() + 6) % 7;
     const dateStr = format(current, "yyyy-MM-dd");
 
     const classSlots = scheduleSlots
@@ -145,9 +145,20 @@ function assignMethod(
   return "active_review";
 }
 
+// avg 18 → 0.6 (bon, moins de sessions mais pas zéro)
+// avg 10 → 1.0 (normal)
+// avg 5  → 1.5 (en difficulté, plus de sessions)
+// avg 0  → 2.0 (urgence maximale)
+// pas de notes → 1.0
+function gradeWeight(subjectAvg: number | undefined): number {
+  if (subjectAvg === undefined) return 1;
+  return Math.max(0.5, Math.min(2, 1 + (10 - subjectAvg) * 0.1));
+}
+
 export function generatePlanning(
   exams: ExamWithDetails[],
-  scheduleSlots: ScheduleSlot[]
+  scheduleSlots: ScheduleSlot[],
+  subjectAverages?: Map<string, number>
 ): GeneratedSession[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -174,6 +185,7 @@ export function generatePlanning(
     chapter: Chapter;
     exam: ExamWithDetails;
     urgency: number;
+    weight: number;
   }[] = [];
 
   for (const exam of upcomingExams) {
@@ -181,11 +193,14 @@ export function generatePlanning(
     const chapters = (exam.chapters ?? []).filter(
       (c) => c.status !== "completed"
     );
+    const weight = gradeWeight(subjectAverages?.get(exam.subject_id));
+
     for (const chapter of chapters) {
       chaptersToSchedule.push({
         chapter,
         exam,
-        urgency: chapters.length / Math.max(daysLeft, 1),
+        urgency: (chapters.length / Math.max(daysLeft, 1)) * weight,
+        weight,
       });
     }
   }
@@ -196,10 +211,11 @@ export function generatePlanning(
   const usedSlots = new Set<string>();
   const chapterSessionCount = new Map<string, number>();
 
-  for (const { chapter, exam } of chaptersToSchedule) {
+  for (const { chapter, exam, weight } of chaptersToSchedule) {
     const examDate = parseISO(exam.exam_date);
     const daysLeft = differenceInDays(examDate, today);
-    const sessionsNeeded = Math.min(Math.max(Math.ceil(daysLeft / 3), 1), 4);
+    const baseSessions = Math.min(Math.max(Math.ceil(daysLeft / 3), 1), 4);
+    const sessionsNeeded = Math.min(Math.round(baseSessions * weight), 6);
 
     let scheduled = 0;
 

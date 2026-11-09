@@ -38,12 +38,13 @@ export default function PlanningPage() {
   const supabase = createClient();
 
   const autoGenerate = useCallback(async () => {
-    const [examsRes, slotsRes, userRes] = await Promise.all([
+    const [examsRes, slotsRes, userRes, gradesRes] = await Promise.all([
       supabase
         .from("exams")
         .select("*, subject:subjects(*), chapters(*)"),
       supabase.from("schedule_slots").select("*"),
       supabase.auth.getUser(),
+      supabase.from("grades").select("subject_id, grade, max_grade, coefficient"),
     ]);
 
     const exams: Exam[] = examsRes.data ?? [];
@@ -54,6 +55,21 @@ export default function PlanningPage() {
     setHasSchedule(slots.length > 0);
 
     if (!userId) return;
+
+    const subjectAverages = new Map<string, number>();
+    if (gradesRes.data) {
+      const bySubject = new Map<string, { tw: number; tc: number }>();
+      for (const g of gradesRes.data) {
+        const entry = bySubject.get(g.subject_id) ?? { tw: 0, tc: 0 };
+        const normalized = (g.grade / g.max_grade) * 20;
+        entry.tw += normalized * g.coefficient;
+        entry.tc += g.coefficient;
+        bySubject.set(g.subject_id, entry);
+      }
+      for (const [id, { tw, tc }] of bySubject) {
+        if (tc > 0) subjectAverages.set(id, tw / tc);
+      }
+    }
 
     const hasUpcomingChapters = exams.some(
       (e) =>
@@ -72,7 +88,7 @@ export default function PlanningPage() {
           .map((s) => `${s.chapter_id}-${s.scheduled_date}-${s.start_time}`)
       );
 
-      const newSessions = generatePlanning(exams, slots)
+      const newSessions = generatePlanning(exams, slots, subjectAverages)
         .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time}`))
         .map((s) => ({
           ...s,
