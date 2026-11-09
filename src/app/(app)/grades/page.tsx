@@ -181,11 +181,18 @@ export default function GradesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">Examen / Projet *</label>
-              {subjectExams.length > 0 && !gradeTitle.startsWith("__") ? (
+              {!subjectId ? (
+                <select
+                  disabled
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-muted"
+                >
+                  <option>Sélectionne d&apos;abord une matière</option>
+                </select>
+              ) : subjectExams.length > 0 ? (
                 <>
                   <select
                     required
-                    value={gradeTitle}
+                    value={gradeTitle.startsWith("__") ? "" : gradeTitle}
                     onChange={(e) => setGradeTitle(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
@@ -196,25 +203,15 @@ export default function GradesPage() {
                       </option>
                     ))}
                   </select>
-                  <button type="button" onClick={() => setGradeTitle("__custom__")} className="text-xs text-primary hover:underline mt-1">
-                    Saisie libre
-                  </button>
                 </>
               ) : (
-                <>
-                  <input
-                    required
-                    value={gradeTitle.startsWith("__") ? "" : gradeTitle}
-                    onChange={(e) => setGradeTitle(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    placeholder={subjectId ? "Ex: CC1, Partiel, TP3..." : "Sélectionne d'abord une matière"}
-                  />
-                  {subjectExams.length > 0 && (
-                    <button type="button" onClick={() => setGradeTitle("")} className="text-xs text-primary hover:underline mt-1">
-                      Choisir depuis mes examens
-                    </button>
-                  )}
-                </>
+                <input
+                  required
+                  value={gradeTitle}
+                  onChange={(e) => setGradeTitle(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Ex: CC1, Partiel, TP3..."
+                />
               )}
             </div>
             <div>
