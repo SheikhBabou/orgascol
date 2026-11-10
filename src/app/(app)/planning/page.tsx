@@ -81,7 +81,7 @@ export default function PlanningPage() {
     if (hasUpcomingChapters && slots.length > 0) {
       const { data: existingSessions } = await supabase
         .from("revision_sessions")
-        .select("chapter_id, scheduled_date, start_time, status");
+        .select("chapter_id, scheduled_date, start_time, end_time, status");
 
       const completedOrSkipped = (existingSessions ?? []).filter(
         (s) => s.status === "completed" || s.status === "skipped"
@@ -94,24 +94,32 @@ export default function PlanningPage() {
       const occupiedSlots = completedOrSkipped.map((s) => ({
         date: s.scheduled_date,
         start_time: s.start_time.slice(0, 5),
-        end_time: s.start_time.slice(0, 5),
+        end_time: (s.end_time ?? s.start_time).slice(0, 5),
       }));
-
-      const newSessions = generatePlanning(exams, slots, subjectAverages, occupiedSlots)
-        .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time.slice(0, 5)}`))
-        .map((s) => ({
-          ...s,
-          user_id: userId,
-          status: "pending" as const,
-        }));
 
       await supabase
         .from("revision_sessions")
         .delete()
         .eq("status", "pending");
 
-      if (newSessions.length > 0) {
-        await supabase.from("revision_sessions").insert(newSessions);
+      const generated = generatePlanning(exams, slots, subjectAverages, occupiedSlots)
+        .filter((s) => !doneKeys.has(`${s.chapter_id}-${s.scheduled_date}-${s.start_time.slice(0, 5)}`));
+
+      const toInsert: typeof generated = [];
+      for (const s of generated) {
+        const overlaps = [...completedOrSkipped, ...toInsert].some((o) => {
+          const oDate = "scheduled_date" in o ? o.scheduled_date : "";
+          const oStart = ("start_time" in o ? o.start_time : "").slice(0, 5);
+          const oEnd = ("end_time" in o ? (o.end_time ?? o.start_time) : "").slice(0, 5);
+          return oDate === s.scheduled_date && s.start_time < oEnd && s.end_time > oStart;
+        });
+        if (!overlaps) toInsert.push(s);
+      }
+
+      if (toInsert.length > 0) {
+        await supabase.from("revision_sessions").insert(
+          toInsert.map((s) => ({ ...s, user_id: userId, status: "pending" as const }))
+        );
       }
     }
 

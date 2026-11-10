@@ -186,6 +186,12 @@ export function generatePlanning(
     (occupiedSlots ?? []).map((s) => `${s.date}-${s.start_time}`)
   );
 
+  const occupiedRanges = (occupiedSlots ?? []).map((s) => ({
+    date: s.date,
+    start: toMinutes(s.start_time),
+    end: toMinutes(s.end_time),
+  }));
+
   const chaptersToSchedule: {
     chapter: Chapter;
     exam: ExamWithDetails;
@@ -237,16 +243,24 @@ export function generatePlanning(
 
       const slot = availableSlots.find((s) => {
         const slotKey = `${s.date}-${s.start_time}`;
-        return (
-          !usedSlots.has(slotKey) &&
-          s.date >= targetDate &&
-          s.date < exam.exam_date
+        if (usedSlots.has(slotKey)) return false;
+        if (s.date < targetDate || s.date >= exam.exam_date) return false;
+        const sStart = toMinutes(s.start_time);
+        const sEnd = toMinutes(s.end_time);
+        const hasOverlap = occupiedRanges.some(
+          (r) => r.date === s.date && sStart < r.end && sEnd > r.start
         );
+        return !hasOverlap;
       });
 
       if (slot) {
         const slotKey = `${slot.date}-${slot.start_time}`;
         usedSlots.add(slotKey);
+        occupiedRanges.push({
+          date: slot.date,
+          start: toMinutes(slot.start_time),
+          end: toMinutes(slot.end_time),
+        });
 
         const count = chapterSessionCount.get(chapter.id) ?? 0;
         chapterSessionCount.set(chapter.id, count + 1);
