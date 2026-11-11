@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2, Upload, X, Check, Loader2, Pencil, Clock } from "lucide-react";
+import { Plus, Trash2, Upload, X, Check, Loader2, Pencil, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addDays, startOfWeek, isToday } from "date-fns";
+import { fr } from "date-fns/locale";
 import type { ScheduleSlot, SlotType, Subject } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
 
@@ -66,6 +68,7 @@ function TimeSelect({
 export default function SchedulePage() {
   const [slots, setSlots] = useState<ScheduleSlot[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
@@ -292,23 +295,47 @@ export default function SchedulePage() {
 
   const subjectColorMap = new Map(subjects.map((s) => [s.name, s.color]));
 
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekLabel = `${format(weekDays[0], "d MMM", { locale: fr })} - ${format(weekDays[6], "d MMM yyyy", { locale: fr })}`;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Emploi du temps</h1>
           <p className="text-muted text-sm mt-1">
-            Saisis tes heures de cours. Clique sur un jour pour ajouter, sur un cours pour le modifier.
+            Clique sur un jour pour ajouter, sur un cours pour le modifier.
           </p>
         </div>
-        <button
-          onClick={() => setShowImport(true)}
-          className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg font-medium hover:bg-background transition-colors text-sm"
-        >
-          <Upload className="w-4 h-4" />
-          Importer (iCal)
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setWeekStart((w) => addDays(w, -7))}
+            className="p-2 border border-border rounded-lg hover:bg-background transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+            className="px-3 py-1.5 border border-border rounded-lg text-xs font-medium hover:bg-background transition-colors"
+          >
+            Cette semaine
+          </button>
+          <button
+            onClick={() => setWeekStart((w) => addDays(w, 7))}
+            className="p-2 border border-border rounded-lg hover:bg-background transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-2 px-4 py-1.5 border border-border rounded-lg font-medium hover:bg-background transition-colors text-xs ml-2"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Importer (iCal)
+          </button>
+        </div>
       </div>
+      <p className="text-sm font-medium text-muted capitalize">{weekLabel}</p>
 
       {/* Import modal */}
       {showImport && (
@@ -588,18 +615,26 @@ export default function SchedulePage() {
             <div className="grid min-w-[700px]" style={{ gridTemplateColumns: "48px repeat(7, 1fr)" }}>
               {/* Header */}
               <div className="border-b border-border bg-background/50 px-1 py-2" />
-              {DAYS.map((day, dayIndex) => (
-                <div
-                  key={day}
-                  onClick={() => openFormForDay(dayIndex)}
-                  className="border-b border-l border-border bg-background/50 px-2 py-2 cursor-pointer hover:bg-primary/5 transition-colors"
-                >
-                  <p className="text-xs font-semibold text-center flex items-center justify-center gap-1">
-                    {day}
-                    <Plus className="w-3 h-3 text-muted" />
-                  </p>
-                </div>
-              ))}
+              {weekDays.map((day, dayIndex) => {
+                const today = isToday(day);
+                return (
+                  <div
+                    key={dayIndex}
+                    onClick={() => openFormForDay(dayIndex)}
+                    className={`border-b border-l border-border px-2 py-2 cursor-pointer hover:bg-primary/5 transition-colors ${today ? "bg-primary/5" : "bg-background/50"}`}
+                  >
+                    <p className={`text-[10px] uppercase tracking-wider text-center ${today ? "text-primary font-bold" : "text-muted"}`}>
+                      {format(day, "EEE", { locale: fr })}
+                    </p>
+                    <p className={`text-sm font-semibold text-center ${today ? "text-primary" : ""}`}>
+                      {format(day, "d")}
+                    </p>
+                    <p className="text-center">
+                      <Plus className="w-3 h-3 text-muted inline-block" />
+                    </p>
+                  </div>
+                );
+              })}
 
               {/* Time column */}
               <div className="relative" style={{ height: totalMinutes * PX_PER_MIN }}>
@@ -617,10 +652,10 @@ export default function SchedulePage() {
               </div>
 
               {/* Day columns */}
-              {DAYS.map((day, dayIndex) => (
+              {weekDays.map((day, dayIndex) => (
                 <div
-                  key={day}
-                  className="relative border-l border-border select-none"
+                  key={dayIndex}
+                  className={`relative border-l border-border select-none ${isToday(day) ? "bg-primary/[0.02]" : ""}`}
                   style={{ height: totalMinutes * PX_PER_MIN, cursor: "crosshair" }}
                   onMouseDown={(e) => handleDayMouseDown(dayIndex, e)}
                   onMouseMove={handleDayMouseMove}
