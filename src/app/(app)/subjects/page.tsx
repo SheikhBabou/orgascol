@@ -99,8 +99,7 @@ export default function SubjectsPage() {
       <div>
         <h1 className="text-2xl font-bold">Matières</h1>
         <p className="text-muted text-sm mt-1">
-          Ajoute toutes tes matières ici. Elles seront disponibles partout
-          dans l&apos;app.
+          Ajoute toutes tes matières ici.
         </p>
       </div>
 
