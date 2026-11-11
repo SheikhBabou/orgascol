@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import {
   BookOpen,
   Clock,
@@ -57,6 +58,7 @@ export default function DashboardPage() {
   const [phoneSaving, setPhoneSaving] = useState(false);
   const [enabledNotifs, setEnabledNotifs] = useState<Set<string>>(new Set());
   const supabase = createClient();
+  usePageTitle("Tableau de bord");
 
   useEffect(() => {
     loadDashboard();

@@ -19,7 +19,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Orga'Scol - Planificateur de révisions",
+  title: {
+    default: "Orga'Scol - Planificateur de révisions",
+    template: "%s | Orga'Scol",
+  },
   description:
     "Planifie tes révisions intelligemment. Ajoute tes examens, tes cours, et laisse Orga'Scol créer ton planning optimal.",
 };

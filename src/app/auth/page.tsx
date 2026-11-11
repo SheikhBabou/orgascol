@@ -358,6 +358,31 @@ function AuthContent() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {view === "signup" && password.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((level) => (
+                        <div
+                          key={level}
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            password.length >= level * 3
+                              ? password.length >= 12
+                                ? "bg-success"
+                                : password.length >= 8
+                                ? "bg-amber-400"
+                                : "bg-danger"
+                              : "bg-border"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className={`text-xs mt-1 ${
+                      password.length >= 12 ? "text-success" : password.length >= 8 ? "text-amber-500" : "text-danger"
+                    }`}>
+                      {password.length < 6 ? "Trop court" : password.length < 8 ? "Faible" : password.length < 12 ? "Correct" : "Fort"}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

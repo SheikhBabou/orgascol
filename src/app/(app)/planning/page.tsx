@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { CheckCircle2, CalendarClock, CalendarDays, BookOpen, Clock, ChevronLeft, ChevronRight, X, Undo2, ThumbsUp } from "lucide-react";
 import { format, parseISO, isToday, addDays, startOfWeek, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,6 +38,7 @@ export default function PlanningPage() {
   const [showThumbsUp, setShowThumbsUp] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  usePageTitle("Planning de révision");
 
   const autoGenerate = useCallback(async () => {
     const [examsRes, slotsRes, userRes, gradesRes] = await Promise.all([

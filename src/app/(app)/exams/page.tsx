@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Plus, Trash2, ChevronDown, ChevronUp, GripVertical, Pencil, X, BookOpen, FolderOpen } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -24,6 +25,7 @@ export default function ExamsPage() {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  usePageTitle("Examens & Projets");
 
   const [itemType, setItemType] = useState<ItemType>("exam");
   const [title, setTitle] = useState("");

@@ -2,24 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { User, Lock, Save, Loader2, Sun, Moon, Monitor, Trash2, AlertTriangle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { User, Lock, Save, Loader2, Sun, Moon, Monitor, Eye, EyeOff } from "lucide-react";
 
 export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  usePageTitle("Paramètres");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [theme, setTheme] = useState<"system" | "light" | "dark">("system");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     loadUser();
@@ -61,21 +59,6 @@ export default function SettingsPage() {
       setConfirmPassword("");
     }
     setPasswordSaving(false);
-  }
-
-  async function handleDeleteAccount() {
-    if (deleteConfirmText !== "SUPPRIMER") return;
-    setDeleting(true);
-    setDeleteError(null);
-
-    const res = await fetch("/api/delete-account", { method: "DELETE" });
-    if (res.ok) {
-      await supabase.auth.signOut();
-      router.push("/");
-    } else {
-      setDeleteError("Une erreur est survenue. Réessaie ou contacte-nous.");
-      setDeleting(false);
-    }
   }
 
   function changeTheme(newTheme: "system" | "light" | "dark") {
@@ -160,27 +143,72 @@ export default function SettingsPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1.5">Nouveau mot de passe</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="6 caractères minimum"
-          />
+          <div className="relative">
+            <input
+              type={showNewPassword ? "text" : "password"}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-3 py-2.5 pr-10 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="6 caractères minimum"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+              tabIndex={-1}
+            >
+              {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+          {newPassword.length > 0 && (
+            <div className="mt-2">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4].map((level) => (
+                  <div
+                    key={level}
+                    className={`h-1 flex-1 rounded-full transition-colors ${
+                      newPassword.length >= level * 3
+                        ? newPassword.length >= 12
+                          ? "bg-success"
+                          : newPassword.length >= 8
+                          ? "bg-amber-400"
+                          : "bg-danger"
+                        : "bg-border"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className={`text-xs mt-1 ${
+                newPassword.length >= 12 ? "text-success" : newPassword.length >= 8 ? "text-amber-500" : "text-danger"
+              }`}>
+                {newPassword.length < 6 ? "Trop court" : newPassword.length < 8 ? "Faible" : newPassword.length < 12 ? "Correct" : "Fort"}
+              </p>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1.5">Confirmer le mot de passe</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            placeholder="Retape le mot de passe"
-          />
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-3 py-2.5 pr-10 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Retape le mot de passe"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {passwordMsg && (
@@ -203,70 +231,6 @@ export default function SettingsPage() {
         </button>
       </form>
 
-      {/* Zone danger - Suppression */}
-      <div className="bg-card-bg border border-danger/30 rounded-xl p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-danger/10">
-            <Trash2 className="w-5 h-5 text-danger" />
-          </div>
-          <div>
-            <h2 className="font-semibold text-danger">Supprimer le compte</h2>
-            <p className="text-xs text-muted">Cette action est irréversible</p>
-          </div>
-        </div>
-
-        {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="px-4 py-2 border border-danger/30 text-danger rounded-lg text-sm font-medium hover:bg-danger/5 transition-colors"
-          >
-            Supprimer mon compte
-          </button>
-        ) : (
-          <div className="space-y-3 p-4 rounded-lg bg-danger/5 border border-danger/20">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
-              <div className="text-sm text-danger space-y-1">
-                <p className="font-semibold">Attention, cette action est définitive !</p>
-                <p className="text-muted text-xs">
-                  Toutes tes données seront supprimées : matières, notes, examens, projets, planning et sessions de révision. Cette action ne peut pas être annulée.
-                </p>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5">
-                Tape <span className="font-bold text-danger">SUPPRIMER</span> pour confirmer
-              </label>
-              <input
-                type="text"
-                value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-danger/30 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-danger/50"
-                placeholder="SUPPRIMER"
-              />
-            </div>
-            {deleteError && (
-              <p className="text-sm text-danger">{deleteError}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={handleDeleteAccount}
-                disabled={deleteConfirmText !== "SUPPRIMER" || deleting}
-                className="flex items-center gap-2 px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
-              >
-                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                {deleting ? "Suppression..." : "Confirmer la suppression"}
-              </button>
-              <button
-                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); setDeleteError(null); }}
-                className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
-              >
-                Annuler
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

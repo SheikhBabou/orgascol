@@ -16,9 +16,10 @@ import {
   Settings,
   CreditCard,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import ConfirmDialog from "@/components/confirm-dialog";
 
 const navigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
@@ -33,6 +34,22 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const meta = user.user_metadata;
+        const first = meta?.first_name || "";
+        const last = meta?.last_name || "";
+        setUserName(first && last ? `${first} ${last}` : first || last || "");
+        setUserEmail(user.email ?? "");
+      }
+    });
+  }, []);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -69,6 +86,17 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t border-border space-y-1">
+        {(userName || userEmail) && (
+          <div className="flex items-center gap-3 px-3 py-2.5 mb-2">
+            <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+              {userName ? userName.charAt(0).toUpperCase() : userEmail.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              {userName && <p className="text-sm font-medium truncate">{userName}</p>}
+              <p className="text-xs text-muted truncate">{userEmail}</p>
+            </div>
+          </div>
+        )}
         <Link
           href="/settings"
           onClick={() => setMobileOpen(false)}
@@ -94,7 +122,7 @@ export default function Sidebar() {
           Abonnement
         </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:bg-danger/10 hover:text-danger transition-colors w-full"
         >
           <LogOut className="w-5 h-5" />
@@ -137,6 +165,15 @@ export default function Sidebar() {
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-sidebar-bg border-r border-border">
         {navContent}
       </aside>
+
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        title="Se déconnecter ?"
+        message="Tu seras redirigé vers la page de connexion."
+        confirmLabel="Déconnexion"
+        onConfirm={() => { setShowLogoutConfirm(false); handleLogout(); }}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </>
   );
 }

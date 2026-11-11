@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Plus, Trash2, Palette, Layers } from "lucide-react";
 import type { Subject } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
@@ -21,6 +22,7 @@ export default function SubjectsPage() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const supabase = createClient();
+  usePageTitle("Matières");
 
   useEffect(() => {
     loadSubjects();

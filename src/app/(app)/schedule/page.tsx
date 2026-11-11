@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Plus, Trash2, Upload, X, Check, Loader2, Pencil, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays, startOfWeek, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -71,6 +72,7 @@ export default function SchedulePage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  usePageTitle("Emploi du temps");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formDay, setFormDay] = useState<number | null>(null);

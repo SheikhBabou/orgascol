@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import {
   CreditCard,
   Calendar,
@@ -61,6 +62,7 @@ export default function SubscriptionPage() {
   const [showCancel, setShowCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const supabase = createClient();
+  usePageTitle("Abonnement");
 
   useEffect(() => {
     loadSubscription();

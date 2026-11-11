@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Plus, Trash2 } from "lucide-react";
 import type { Subject, Grade, Exam, Project } from "@/types/database";
 import ConfirmDialog from "@/components/confirm-dialog";
@@ -14,6 +15,7 @@ export default function GradesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const supabase = createClient();
+  usePageTitle("Notes & Moyennes");
 
   const [subjectId, setSubjectId] = useState("");
   const [gradeTitle, setGradeTitle] = useState("");
