@@ -1,4 +1,5 @@
 import Sidebar from "@/components/sidebar";
+import Topbar from "@/components/topbar";
 import AuthGuard from "@/components/auth-guard";
 import TrialGuard from "@/components/trial-guard";
 import IdleLogout from "@/components/idle-logout";
@@ -14,8 +15,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <IdleLogout />
       <RevisionNudge />
       <Sidebar />
-      <main className="flex-1 md:ml-64">
-        <div className="p-4 md:p-8 pt-16 md:pt-8 animate-fade-in">{children}</div>
+      <main className="flex-1 md:ml-64 flex flex-col">
+        <Topbar />
+        <div className="p-4 md:p-8 pt-16 md:pt-4 flex-1 animate-fade-in">{children}</div>
       </main>
     </div>
   );
